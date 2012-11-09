@@ -344,7 +344,8 @@ def createAutoConf(factory, defaultenv, btarget=None, distro=None, buildhistory=
     factory.addStep(ShellCommand(warnOnFailure=True, description="Remove old auto.conf",
                     command="rm " +  AUTOCONF,
                     timeout=60))
-    fout = 'PACKAGE_CLASSES = "package_rpm package_deb package_ipk"\n'
+    #fout = 'PACKAGE_CLASSES = "package_rpm package_deb package_ipk"\n'
+    fout = 'PACKAGE_CLASSES = "package_rpm"\n'
     fout = fout + 'BB_NUMBER_THREADS = "10"\n'
     fout = fout + 'PARALLEL_MAKE = "-j 16"\n'
     fout = fout + 'SDKMACHINE ?= "i586"\n'
@@ -793,7 +794,7 @@ def nightlyQEMU(factory, machine, distrotype, provider):
     if distrotype == "poky":
         defaultenv['DISTRO'] = "poky"
         runImage(factory, machine, 
-                 'core-image-sato core-image-sato-dev core-image-sato-sdk core-image-minimal core-image-minimal-dev gumstix-core-image', 
+                 'core-image-sato core-image-sato-dev core-image-sato-sdk core-image-minimal core-image-minimal-dev gumstix-console-image', 
                  distrotype, False, provider, defaultenv['BUILD_HISTORY_COLLECT'])
         publishArtifacts(factory, machine, "build/build/tmp")
         publishArtifacts(factory, "ipk", "build/build/tmp")
@@ -885,7 +886,7 @@ def runPostamble(factory):
 def buildBSPLayer(factory, distrotype, btarget, provider):
     if distrotype == "poky":
         defaultenv['DISTRO'] = 'poky'
-        runImage(factory, btarget, 'core-image-sato core-image-sato-sdk core-image-minimal gumstix-core-image', distrotype, True, provider, False)
+        runImage(factory, btarget, 'core-image-sato core-image-sato-sdk core-image-minimal gumstix-console-image', distrotype, True, provider, False)
         publishArtifacts(factory, btarget, "build/build/tmp")
         publishArtifacts(factory, "ipk", "build/build/tmp")
         publishArtifacts(factory, "rpm", "build/build/tmp")
@@ -2034,7 +2035,8 @@ f97.addStep(ShellCommand, description="Setting SDKMACHINE=i686",
             command="echo 'Setting SDKMACHINE=i686'", timeout=10)
 nightlyBSP(f97, 'overo', 'poky', "yocto")
 #runImage(f97, 'overo', 'meta-toolchain-gmae', defaultenv['DISTRO'], False, "yocto", defaultenv['BUILD_HISTORY_COLLECT'])
-runImage(f97, 'overo', 'meta-toolchain-gmae', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
+#runImage(f97, 'overo', 'meta-toolchain-gmae', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
+runImage(f97, 'overo', 'gumstix-console-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
 publishArtifacts(f97, "toolchain","build/build/tmp")
 publishArtifacts(f97, "ipk", "build/build/tmp")
 runArchPostamble(f97, "poky", defaultenv['ABTARGET'])
