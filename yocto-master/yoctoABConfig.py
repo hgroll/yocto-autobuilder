@@ -2004,6 +2004,40 @@ yocto_builders.append(b95)
 
 ################################################################################
 #
+# Nightly arm
+#
+################################################################################
+f97 = factory.BuildFactory()
+defaultenv['DISTRO'] = 'poky'
+defaultenv['ABTARGET'] = 'nightly-gumstix'
+defaultenv['ENABLE_SWABBER'] = 'false'
+defaultenv['MIGPL']="False"
+defaultenv['REVISION'] = "HEAD"
+makeCheckout(f97)
+runPreamble(f97, defaultenv['ABTARGET'])
+defaultenv['SDKMACHINE'] = 'i686'
+f97.addStep(ShellCommand, description="Setting SDKMACHINE=i686", 
+            command="echo 'Setting SDKMACHINE=i686'", timeout=10)
+#nightlyQEMU(f69, 'qemuarm', 'poky', "yocto")
+nightlyBSP(f97, 'overo', 'poky', "yocto")
+runImage(f97, 'overo', 'meta-toolchain-gmae', defaultenv['DISTRO'], False, "yocto", defaultenv['BUILD_HISTORY_COLLECT'])
+defaultenv['SDKMACHINE'] = 'x86_64'
+#f69.addStep(ShellCommand, description="Setting SDKMACHINE=x86_64", 
+            command="echo 'Setting SDKMACHINE=x86_64'", timeout=10)
+#runImage(f69, 'qemuarm', 'meta-toolchain-gmae', defaultenv['DISTRO'], False, "yocto", defaultenv['BUILD_HISTORY_COLLECT'])
+publishArtifacts(f97, "toolchain","build/build/tmp")
+publishArtifacts(f97, "ipk", "build/build/tmp")
+runArchPostamble(f97, "poky", defaultenv['ABTARGET'])
+f69.addStep(NoOp(name="nightly"))
+b69 = {'name': "nightly-gumstix",
+      'slavenames': ["builder1"],
+      'builddir': "nightly-gumstix",
+      'factory': f97,
+      }
+yocto_builders.append(b97)
+
+################################################################################
+#
 # Nightly Release Builder
 #
 ################################################################################
