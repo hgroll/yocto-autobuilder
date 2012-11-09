@@ -1328,6 +1328,7 @@ yocto_sched.append(triggerable.Triggerable(name="nightly-multilib", builderNames
 yocto_sched.append(triggerable.Triggerable(name="nightly-tiny", builderNames=["nightly-tiny"]))
 yocto_sched.append(triggerable.Triggerable(name="nightly-non-gpl3", builderNames=["nightly-non-gpl3"]))
 yocto_sched.append(triggerable.Triggerable(name="p1022ds", builderNames=["p1022ds"]))
+yocto_sched.append(triggerable.Triggerable(name="nightly-gumstix", builderNames=["nightly-gumstix"]))
 
 #####################################################################
 #
