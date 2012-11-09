@@ -2023,13 +2023,13 @@ nightlyBSP(f97, 'overo', 'poky', "yocto")
 runImage(f97, 'overo', 'meta-toolchain-gmae', defaultenv['DISTRO'], False, "yocto", defaultenv['BUILD_HISTORY_COLLECT'])
 defaultenv['SDKMACHINE'] = 'x86_64'
 #f69.addStep(ShellCommand, description="Setting SDKMACHINE=x86_64", 
-            command="echo 'Setting SDKMACHINE=x86_64'", timeout=10)
+#            command="echo 'Setting SDKMACHINE=x86_64'", timeout=10)
 #runImage(f69, 'qemuarm', 'meta-toolchain-gmae', defaultenv['DISTRO'], False, "yocto", defaultenv['BUILD_HISTORY_COLLECT'])
 publishArtifacts(f97, "toolchain","build/build/tmp")
 publishArtifacts(f97, "ipk", "build/build/tmp")
 runArchPostamble(f97, "poky", defaultenv['ABTARGET'])
-f69.addStep(NoOp(name="nightly"))
-b69 = {'name': "nightly-gumstix",
+f97.addStep(NoOp(name="nightly"))
+b97 = {'name': "nightly-gumstix",
       'slavenames': ["builder1"],
       'builddir': "nightly-gumstix",
       'factory': f97,
