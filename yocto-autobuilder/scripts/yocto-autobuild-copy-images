@@ -38,6 +38,7 @@ if [ $# != 2 ]; then
 fi
 
 if [[ "$TARGET" != "qemux86" && "$TARGET" != "qemux86-64" &&
+      "$TARGET" != "overo" && 
       "$TARGET" != "qemuarm" && "$TARGET" != "qemumips" &&
       "$TARGET" != "qemuppc" && "$TARGET" != "emenlow" &&
       "$TARGET" != "atom-pc" && "$TARGET" != "toolchain" &&
@@ -189,6 +190,22 @@ if [ "$TARGET" = "qemuppc" ]; then
 fi
 
 if [ "$TARGET" = "beagleboard" ]; then
+    DEST=$DEST"/machines/"$TARGET"/arm"
+    for x in `/bin/ls *|grep -v 201|grep $TARGET`; do y=`readlink $x`; FILES_META="$FILES_META $y"; done
+    FILES_META="$FILES_META modules-*-$TARGET.tgz"
+    mkdir -p $DEST
+    for file in ${FILES_META[@]}; do
+            if [ -e $file ]; then
+                    echo "Copying $file to $DEST"
+                    cp $file $DEST
+                    find $DEST -type f -name "*.hddimg" -exec bzip2 {} \;
+            else
+                    echo "WARNING: $file does not exist (due to build failure?)"
+            fi
+    done
+fi
+
+if [ "$TARGET" = "overo" ]; then
     DEST=$DEST"/machines/"$TARGET"/arm"
     for x in `/bin/ls *|grep -v 201|grep $TARGET`; do y=`readlink $x`; FILES_META="$FILES_META $y"; done
     FILES_META="$FILES_META modules-*-$TARGET.tgz"

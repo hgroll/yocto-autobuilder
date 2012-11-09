@@ -779,7 +779,7 @@ def nightlyQEMU(factory, machine, distrotype, provider):
     if distrotype == "poky":
         defaultenv['DISTRO'] = "poky"
         runImage(factory, machine, 
-                 'core-image-sato core-image-sato-dev core-image-sato-sdk core-image-minimal core-image-minimal-dev', 
+                 'core-image-sato core-image-sato-dev core-image-sato-sdk core-image-minimal core-image-minimal-dev gumstix-core-image', 
                  distrotype, False, provider, defaultenv['BUILD_HISTORY_COLLECT'])
         publishArtifacts(factory, machine, "build/build/tmp")
         publishArtifacts(factory, "ipk", "build/build/tmp")
@@ -871,7 +871,7 @@ def runPostamble(factory):
 def buildBSPLayer(factory, distrotype, btarget, provider):
     if distrotype == "poky":
         defaultenv['DISTRO'] = 'poky'
-        runImage(factory, btarget, 'core-image-sato core-image-sato-sdk core-image-minimal', distrotype, True, provider, False)
+        runImage(factory, btarget, 'core-image-sato core-image-sato-sdk core-image-minimal gumstix-core-image', distrotype, True, provider, False)
         publishArtifacts(factory, btarget, "build/build/tmp")
         publishArtifacts(factory, "ipk", "build/build/tmp")
         publishArtifacts(factory, "rpm", "build/build/tmp")
@@ -2004,7 +2004,7 @@ yocto_builders.append(b95)
 
 ################################################################################
 #
-# Nightly arm
+# Nightly Gumstix 
 #
 ################################################################################
 f97 = factory.BuildFactory()
@@ -2018,13 +2018,8 @@ runPreamble(f97, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
 f97.addStep(ShellCommand, description="Setting SDKMACHINE=i686", 
             command="echo 'Setting SDKMACHINE=i686'", timeout=10)
-#nightlyQEMU(f69, 'qemuarm', 'poky', "yocto")
 nightlyBSP(f97, 'overo', 'poky', "yocto")
 runImage(f97, 'overo', 'meta-toolchain-gmae', defaultenv['DISTRO'], False, "yocto", defaultenv['BUILD_HISTORY_COLLECT'])
-defaultenv['SDKMACHINE'] = 'x86_64'
-#f69.addStep(ShellCommand, description="Setting SDKMACHINE=x86_64", 
-#            command="echo 'Setting SDKMACHINE=x86_64'", timeout=10)
-#runImage(f69, 'qemuarm', 'meta-toolchain-gmae', defaultenv['DISTRO'], False, "yocto", defaultenv['BUILD_HISTORY_COLLECT'])
 publishArtifacts(f97, "toolchain","build/build/tmp")
 publishArtifacts(f97, "ipk", "build/build/tmp")
 runArchPostamble(f97, "poky", defaultenv['ABTARGET'])
