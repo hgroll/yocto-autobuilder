@@ -303,7 +303,7 @@ def createBBLayersConf(factory, defaultenv, btarget=None, bsplayer=False, provid
             fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-openembedded/meta-gnome \ \n"
             fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-openembedded/meta-oe \ \n"
             fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-openembedded/meta-xfce \ \n"
-            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-openembedded/meta-gumstix \ \n"
+            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-gumstix \ \n"
     elif buildprovider=="oe":
         fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta \ \n"
     if bsplayer==True and provider=="intel":
@@ -470,7 +470,7 @@ def runBSPLayerPreamble(factory, target, provider):
                        timeout=10)
        factory.addStep(ShellCommand(workdir="build/yocto/", command=["git", "clone",  "git://git.yoctoproject.org/meta-fsl-ppc.git"], timeout=1000))
        factory.addStep(ShellCommand(doStepIf=getTag, workdir="build/yocto/meta-fsl-ppc", command=["git", "checkout",  WithProperties("%s", "otherbranch")], timeout=1000))
-    elif provider=="oe":
+    elif provider=="oe" or provider=="gumstix":
        factory.addStep(ShellCommand,
                        command="echo 'Checking out git://git.openembedded.org/meta-openembedded.git'",
                        timeout=10)
