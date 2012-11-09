@@ -1257,6 +1257,10 @@ f1.addStep(Trigger(schedulerNames=['p1022ds'],
                             updateSourceStamp=False,
                             set_properties={'DEST': Property("DEST")},
                             waitForFinish=False))
+f1.addStep(Trigger(schedulerNames=['nightly-gumstix'],
+                            updateSourceStamp=False,
+                            set_properties={'DEST': Property("DEST")},
+                            waitForFinish=False))
 f1.addStep(YoctoBlocker(idlePolicy="block", timeout=62400, upstreamSteps=[
                                         ("nightly-arm", "nightly"),
                                         ("nightly-x86", "nightly"),
@@ -1272,7 +1276,8 @@ f1.addStep(YoctoBlocker(idlePolicy="block", timeout=62400, upstreamSteps=[
                                         ("nightly-multilib", "nightly"),
                                         ("nightly-tiny", "nightly"),
                                         ("nightly-non-gpl3", "nightly"),
-                                        ("p1022ds", "nightly")]))
+                                        ("p1022ds", "nightly"),
+                                        ("nightly-gumstix", "nightly")]))
 runPostamble(f1)
 f1.addStep(ShellCommand, 
             description="Prepping for package-index creation by copying ipks back to main builddir", workdir="build/build/tmp/deploy",
