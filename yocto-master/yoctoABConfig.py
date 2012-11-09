@@ -641,6 +641,8 @@ def makeCheckout(factory):
         factory.addStep(ShellCommand(
                         description=["Building", WithProperties("%s", "branch"),  WithProperties("%s", "repository")],
                         command=["echo", WithProperties("%s", "branch"),  WithProperties("%s", "repository")]))
+        if defaultenv['ABTARGET'] == "nightly-gumstix":
+            factory.addStep(ShellCommand(workdir="build", command=["git", "git://github.com/gumstix/meta-gumstix.git"], time=1000))
     elif defaultenv['ABTARGET'] == "oecore":
         factory.addStep(ShellCommand(doStepIf=setOECoreRepo,
                         description="Getting the requested git repo",
@@ -661,6 +663,8 @@ def makeCheckout(factory):
                         command=["echo", "Building OE-Core Master"]))
     elif defaultenv['ABTARGET'] == "nightly-x32": 
         factory.addStep(ShellCommand(doStepIf=checkMultiOSSState, workdir="build", command=["git", "clone",  "git://git.yoctoproject.org/meta-qt3.git"], timeout=1000))
+    #elif defaultenv['ABTARGET'] == "nightly-gumstix": 
+
 
 def makeTarball(factory):
     factory.addStep(ShellCommand, description="Generating release tarball", 
