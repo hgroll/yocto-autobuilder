@@ -299,6 +299,11 @@ def createBBLayersConf(factory, defaultenv, btarget=None, bsplayer=False, provid
     if buildprovider=="yocto":
         fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta \ \n"
         fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-yocto \ \n"
+        if provider=="gumstix"
+            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-openembedded/meta-gnome \ \n"
+            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-openembedded/meta-oe \ \n"
+            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-openembedded/meta-xfce \ \n"
+            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-openembedded/meta-gumstix \ \n"
     elif buildprovider=="oe":
         fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta \ \n"
     if bsplayer==True and provider=="intel":
@@ -312,7 +317,7 @@ def createBBLayersConf(factory, defaultenv, btarget=None, bsplayer=False, provid
     factory.addStep(ShellCommand(description="Creating bblayers.conf",
                     command="echo '" +  fout + "'>>" + BBLAYER,
                     timeout=60))
-    if buildprovider=="yocto":
+    if buildprovider=="yocto" and provider!="gumstix":
         factory.addStep(ShellCommand(doStepIf=checkYoctoBSPLayer, description="Adding meta-yocto-bsp layer to bblayers.conf",
                         command="echo 'BBLAYERS += \"" + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-yocto-bsp\"'>>" + BBLAYER,
                         timeout=60))
@@ -2023,7 +2028,8 @@ defaultenv['SDKMACHINE'] = 'i686'
 f97.addStep(ShellCommand, description="Setting SDKMACHINE=i686", 
             command="echo 'Setting SDKMACHINE=i686'", timeout=10)
 nightlyBSP(f97, 'overo', 'poky', "yocto")
-runImage(f97, 'overo', 'meta-toolchain-gmae', defaultenv['DISTRO'], False, "yocto", defaultenv['BUILD_HISTORY_COLLECT'])
+#runImage(f97, 'overo', 'meta-toolchain-gmae', defaultenv['DISTRO'], False, "yocto", defaultenv['BUILD_HISTORY_COLLECT'])
+runImage(f97, 'overo', 'meta-toolchain-gmae', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
 publishArtifacts(f97, "toolchain","build/build/tmp")
 publishArtifacts(f97, "ipk", "build/build/tmp")
 runArchPostamble(f97, "poky", defaultenv['ABTARGET'])
