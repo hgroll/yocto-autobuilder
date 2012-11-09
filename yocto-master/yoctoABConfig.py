@@ -299,7 +299,7 @@ def createBBLayersConf(factory, defaultenv, btarget=None, bsplayer=False, provid
     if buildprovider=="yocto":
         fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta \ \n"
         fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-yocto \ \n"
-        if provider=="gumstix"
+        if provider=="gumstix":
             fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-openembedded/meta-gnome \ \n"
             fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-openembedded/meta-oe \ \n"
             fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-openembedded/meta-xfce \ \n"
