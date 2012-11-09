@@ -642,7 +642,7 @@ def makeCheckout(factory):
                         description=["Building", WithProperties("%s", "branch"),  WithProperties("%s", "repository")],
                         command=["echo", WithProperties("%s", "branch"),  WithProperties("%s", "repository")]))
         if defaultenv['ABTARGET'] == "nightly-gumstix":
-            factory.addStep(ShellCommand(workdir="build", command=["git", "git://github.com/gumstix/meta-gumstix.git"], timeout=1000))
+            factory.addStep(ShellCommand(workdir="build", command=["git", "clone", "git://github.com/gumstix/meta-gumstix.git"], timeout=1000))
     elif defaultenv['ABTARGET'] == "oecore":
         factory.addStep(ShellCommand(doStepIf=setOECoreRepo,
                         description="Getting the requested git repo",
