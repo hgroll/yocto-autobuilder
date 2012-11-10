@@ -2034,7 +2034,7 @@ runPreamble(f97, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
 f97.addStep(ShellCommand, description="Setting SDKMACHINE=i686", 
             command="echo 'Setting SDKMACHINE=i686'", timeout=10)
-nightlyBSP(f97, 'overo', 'poky', "yocto")
+#nightlyBSP(f97, 'overo', 'poky', "yocto")
 #runImage(f97, 'overo', 'meta-toolchain-gmae', defaultenv['DISTRO'], False, "yocto", defaultenv['BUILD_HISTORY_COLLECT'])
 #runImage(f97, 'overo', 'meta-toolchain-gmae', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
 runImage(f97, 'overo', 'gumstix-console-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
