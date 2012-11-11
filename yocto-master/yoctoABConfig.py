@@ -794,7 +794,8 @@ def nightlyQEMU(factory, machine, distrotype, provider):
     if distrotype == "poky":
         defaultenv['DISTRO'] = "poky"
         runImage(factory, machine, 
-                 'core-image-sato core-image-sato-dev core-image-sato-sdk core-image-minimal core-image-minimal-dev     gumstix-console-image', 
+#                 'core-image-sato core-image-sato-dev core-image-sato-sdk core-image-minimal core-image-minimal-dev     gumstix-console-image', 
+                 'gumstix-console-image', 
                  distrotype, False, provider, defaultenv['BUILD_HISTORY_COLLECT'])
         publishArtifacts(factory, machine, "build/build/tmp")
         publishArtifacts(factory, "ipk", "build/build/tmp")
