@@ -638,15 +638,15 @@ def makeCheckout(factory):
                         mode="clobber", 
                         branch=WithProperties("%s", "branch"),
                         timeout=10000, retry=(5, 3)))
-        factory.addStep(ShellCommand(doStepIf=getTag, command=["git", "checkout",  WithProperties("%s", "pokytag")], timeout=1000))
-        factory.addStep(ShellCommand(workdir="build", command=["git", "clone",  "git://git.yoctoproject.org/meta-qt3.git"], timeout=1000))
-        factory.addStep(ShellCommand(doStepIf=getTag, workdir="build/meta-qt3", command=["git", "checkout",  WithProperties("%s", "otherbranch")], timeout=1000))
-        factory.addStep(shell.SetProperty(workdir="build/meta-qt3",
-                        command="git rev-parse HEAD",
-                        property="QTHASH"))
-        factory.addStep(ShellCommand(
-                        description=["Building", WithProperties("%s", "branch"),  WithProperties("%s", "repository")],
-                        command=["echo", WithProperties("%s", "branch"),  WithProperties("%s", "repository")]))
+        #factory.addStep(ShellCommand(doStepIf=getTag, command=["git", "checkout",  WithProperties("%s", "pokytag")], timeout=1000))
+        #factory.addStep(ShellCommand(workdir="build", command=["git", "clone",  "git://git.yoctoproject.org/meta-qt3.git"], timeout=1000))
+        #factory.addStep(ShellCommand(doStepIf=getTag, workdir="build/meta-qt3", command=["git", "checkout",  WithProperties("%s", "otherbranch")], timeout=1000))
+        #factory.addStep(shell.SetProperty(workdir="build/meta-qt3",
+        #                command="git rev-parse HEAD",
+        #                property="QTHASH"))
+        #factory.addStep(ShellCommand(
+        #                description=["Building", WithProperties("%s", "branch"),  WithProperties("%s", "repository")],
+        #                command=["echo", WithProperties("%s", "branch"),  WithProperties("%s", "repository")]))
         if defaultenv['ABTARGET'] == "nightly-gumstix":
             factory.addStep(ShellCommand(workdir="build", command=["git", "clone", "git://github.com/gumstix/meta-gumstix.git"], timeout=1000))
             factory.addStep(ShellCommand,
