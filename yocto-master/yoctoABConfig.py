@@ -314,6 +314,7 @@ def createBBLayersConf(factory, defaultenv, btarget=None, bsplayer=False, provid
     elif bsplayer==True and provider=="fsl" and btarget == "p1022ds":
         fout = fout + defaultenv['SLAVEBASEDIR']  + "/" + slavehome + '/build/yocto/meta-fsl-ppc \ \n'
     #fout = fout + defaultenv['SLAVEBASEDIR']  + "/" + slavehome + '/build/meta-qt3 " \n'
+    fout = fout + ' " \n'
     factory.addStep(ShellCommand(description="Creating bblayers.conf",
                     command="echo '" +  fout + "'>>" + BBLAYER,
                     timeout=60))
