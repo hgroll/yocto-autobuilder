@@ -2028,6 +2028,7 @@ f97 = factory.BuildFactory()
 defaultenv['DISTRO'] = 'poky'
 defaultenv['ABTARGET'] = 'nightly-gumstix'
 defaultenv['MACHINE'] = "overo"
+defaultenv['BRANCH'] = "denzil"
 defaultenv['ENABLE_SWABBER'] = 'false'
 defaultenv['MIGPL']="False"
 defaultenv['REVISION'] = "HEAD"
