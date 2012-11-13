@@ -2031,7 +2031,7 @@ defaultenv['MACHINE'] = "overo"
 defaultenv['BRANCH'] = "denzil"
 defaultenv['ENABLE_SWABBER'] = 'false'
 defaultenv['MIGPL']="False"
-defaultenv['REVISION'] = "HEAD"
+defaultenv['REVISION'] = "denzil"
 makeCheckout(f97)
 runPreamble(f97, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
