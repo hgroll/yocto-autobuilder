@@ -584,7 +584,8 @@ def getRepo(step):
         if gitrepo == "git://git.yoctoproject.org/poky-contrib":
             for release in releases:
                 if release in branch:
-                    step.setProperty("otherbranch", release)
+                    #step.setProperty("otherbranch", release)
+                    step.setProperty("otherbranch", "denzil")
                     break
                 else:
                     step.setProperty("otherbranch", "denzil")
@@ -592,9 +593,11 @@ def getRepo(step):
             step.setProperty("short-repo-name", "poky-contrib")
         elif gittype == "git://git.yoctoproject.org/poky":
             if branch != "master":
-                step.setProperty("otherbranch", branch)
+                step.setProperty("otherbranch", "denzil")
+                #step.setProperty("otherbranch", branch)
             else:
-                step.setProperty("otherbranch", "master")
+                #step.setProperty("otherbranch", "master")
+                step.setProperty("otherbranch", "denzil")
             step.setProperty("short-repo-name", "poky")
     except:
         step.setProperty("short-repo-name", "poky")
