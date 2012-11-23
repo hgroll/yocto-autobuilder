@@ -664,10 +664,10 @@ def makeCheckout(factory):
             factory.addStep(ShellCommand(doStepIf=getTag, workdir="build/meta-openembedded", command=["git", "checkout",  WithProperties("%s", "otherbranch")], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["git", "clone",  "git://github.com/adam-lee/Gumstix-YoctoProject-Repo.git"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["git", "checkout",  "dev"], timeout=1000))
+            factory.addStep(ShellCommand(workdir="./", command=["sudo", "rm", "-rf", "Gumstix-YoctoProject-Repo"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["curl", "-o", "repo", "https://dl-ssl.google.com/dl/googlesource/git-repo/repo"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["chmod", "a+x", "repo"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["sudo", "mv", "repo", "/usr/local/bin"], timeout=1000))
-            factory.addStep(ShellCommand(workdir="./", command=["sudo", "rm", "-rf", "Gumstix-YoctoProject-Repo"], timeout=1000))
             factory.addStep(ShellCommand(workdir="build/", command=["repo", "init", "-u", "https://github.com/adam-lee/Gumstix-YoctoProject-Repo.git", "-b", "dev"], timeout=1000))
             factory.addStep(ShellCommand(workdir="build/", command=["repo", "sync"], timeout=1000))
     elif defaultenv['ABTARGET'] == "oecore":
