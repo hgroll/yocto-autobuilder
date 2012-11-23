@@ -654,12 +654,18 @@ def makeCheckout(factory):
         #                description=["Building", WithProperties("%s", "branch"),  WithProperties("%s", "repository")],
         #                command=["echo", WithProperties("%s", "branch"),  WithProperties("%s", "repository")]))
         if defaultenv['ABTARGET'] == "nightly-gumstix":
-            factory.addStep(ShellCommand(workdir="build", command=["git", "clone", "git://github.com/gumstix/meta-gumstix.git"], timeout=1000))
+            factory.addStep(ShellCommand(workdir="build", command=["git", "clone", "git://github.com/adam-lee/meta-gumstix.git"], timeout=1000))
             factory.addStep(ShellCommand,
                             command="echo 'Checking out git://git.openembedded.org/meta-openembedded.git'",
                             timeout=10)
             factory.addStep(ShellCommand(workdir="build/", command=["git", "clone",  "git://git.openembedded.org/meta-openembedded.git"], timeout=1000))
             factory.addStep(ShellCommand(doStepIf=getTag, workdir="build/meta-openembedded", command=["git", "checkout",  WithProperties("%s", "otherbranch")], timeout=1000))
+            factory.addStep(ShellCommand(workdir="./", command=["git", "clone",  "git://github.com/adam-lee/Gumstix-YoctoProject-Repo.git"], timeout=1000))
+            factory.addStep(ShellCommand(workdir="./", command=["git", "checkout",  "dev"], timeout=1000))
+            factory.addStep(ShellCommand(workdir="./", command=["curl", "https://dl-ssl.google.com/dl/googlesource/git-repo/repo > repo"], timeout=1000))
+            factory.addStep(ShellCommand(workdir="./", command=["chmod", "a+x", "repo"], timeout=1000))
+            factory.addStep(ShellCommand(workdir="./", command=["sudo", "mv", "repo", "/usr/local/bin"], timeout=1000))
+            factory.addStep(ShellCommand(workdir="build/", command=["repo", "init", "-u", "git://github.com/adam-lee/gumstix-yocto-manifest.git"], timeout=1000))
     elif defaultenv['ABTARGET'] == "oecore":
         factory.addStep(ShellCommand(doStepIf=setOECoreRepo,
                         description="Getting the requested git repo",
