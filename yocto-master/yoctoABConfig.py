@@ -303,7 +303,9 @@ def createBBLayersConf(factory, defaultenv, btarget=None, bsplayer=False, provid
             fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-openembedded/meta-gnome \ \n"
             fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-openembedded/meta-oe \ \n"
             fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-openembedded/meta-xfce \ \n"
-            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-gumstix \ \n"
+            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-gumstix-bsp \ \n"
+            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-gumstix-extras \ \n"
+            #fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-gumstix \ \n"
     elif buildprovider=="oe":
         fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta \ \n"
     if bsplayer==True and provider=="intel":
@@ -665,7 +667,9 @@ def makeCheckout(factory):
             factory.addStep(ShellCommand(workdir="./", command=["curl", "-o", "repo", "https://dl-ssl.google.com/dl/googlesource/git-repo/repo"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["chmod", "a+x", "repo"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["sudo", "mv", "repo", "/usr/local/bin"], timeout=1000))
+            factory.addStep(ShellCommand(workdir="./", command=["sudo", "rm", "-rf", "Gumstix-YoctoProject-Repo"], timeout=1000))
             factory.addStep(ShellCommand(workdir="build/", command=["repo", "init", "-u", "https://github.com/adam-lee/Gumstix-YoctoProject-Repo.git", "-b", "dev"], timeout=1000))
+            factory.addStep(ShellCommand(workdir="build/", command=["repo", "sync"], timeout=1000))
     elif defaultenv['ABTARGET'] == "oecore":
         factory.addStep(ShellCommand(doStepIf=setOECoreRepo,
                         description="Getting the requested git repo",
