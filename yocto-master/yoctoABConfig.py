@@ -297,14 +297,14 @@ def createBBLayersConf(factory, defaultenv, btarget=None, bsplayer=False, provid
     fout = fout + 'BBFILES ?="" \n'
     fout = fout + 'BBLAYERS += " \ \n'
     if buildprovider=="yocto":
-        fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta \ \n"
-        fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-yocto \ \n"
+        fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta \ \n"
+        fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-yocto \ \n"
         if provider=="gumstix":
-            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-openembedded/meta-gnome \ \n"
-            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-openembedded/meta-oe \ \n"
-            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-openembedded/meta-xfce \ \n"
-            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-gumstix-bsp \ \n"
-            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-gumstix-extras \ \n"
+            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-openembedded/meta-gnome \ \n"
+            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-openembedded/meta-oe \ \n"
+            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-openembedded/meta-xfce \ \n"
+            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-gumstix-bsp \ \n"
+            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-gumstix-extras \ \n"
             #fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-gumstix \ \n"
     elif buildprovider=="oe":
         fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta \ \n"
@@ -322,7 +322,7 @@ def createBBLayersConf(factory, defaultenv, btarget=None, bsplayer=False, provid
                     timeout=60))
     if buildprovider=="yocto" and provider!="gumstix":
         factory.addStep(ShellCommand(doStepIf=checkYoctoBSPLayer, description="Adding meta-yocto-bsp layer to bblayers.conf",
-                        command="echo 'BBLAYERS += \"" + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-yocto-bsp\"'>>" + BBLAYER,
+                        command="echo 'BBLAYERS += \"" + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-yocto-bsp\"'>>" + BBLAYER,
                         timeout=60))
     if defaultenv['ABTARGET'] == 'nightly-x32':
         factory.addStep(ShellCommand(doStepIf=lambda(step): step.build.getProperties().has_key("PRE13"), description="Adding meta-x32 layer to bblayers.conf",
@@ -656,20 +656,20 @@ def makeCheckout(factory):
         #                description=["Building", WithProperties("%s", "branch"),  WithProperties("%s", "repository")],
         #                command=["echo", WithProperties("%s", "branch"),  WithProperties("%s", "repository")]))
         if defaultenv['ABTARGET'] == "nightly-gumstix":
-            factory.addStep(ShellCommand(workdir="build", command=["git", "clone", "git://github.com/adam-lee/meta-gumstix.git"], timeout=1000))
+            factory.addStep(ShellCommand(workdir="build/poky", command=["git", "clone", "git://github.com/adam-lee/meta-gumstix.git"], timeout=1000))
             factory.addStep(ShellCommand,
                             command="echo 'Checking out git://git.openembedded.org/meta-openembedded.git'",
                             timeout=10)
-            factory.addStep(ShellCommand(workdir="build/", command=["git", "clone",  "git://git.openembedded.org/meta-openembedded.git"], timeout=1000))
-            factory.addStep(ShellCommand(doStepIf=getTag, workdir="build/meta-openembedded", command=["git", "checkout",  WithProperties("%s", "otherbranch")], timeout=1000))
+            factory.addStep(ShellCommand(workdir="build/poky/", command=["git", "clone",  "git://git.openembedded.org/meta-openembedded.git"], timeout=1000))
+            factory.addStep(ShellCommand(doStepIf=getTag, workdir="build/poky/meta-openembedded", command=["git", "checkout",  WithProperties("%s", "otherbranch")], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["git", "clone",  "git://github.com/adam-lee/Gumstix-YoctoProject-Repo.git"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["git", "checkout",  "dev"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["sudo", "rm", "-rf", "Gumstix-YoctoProject-Repo"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["curl", "-o", "repo", "https://dl-ssl.google.com/dl/googlesource/git-repo/repo"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["chmod", "a+x", "repo"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["sudo", "mv", "repo", "/usr/local/bin"], timeout=1000))
-            factory.addStep(ShellCommand(workdir="build/", command=["repo", "init", "-u", "https://github.com/adam-lee/Gumstix-YoctoProject-Repo.git", "-b", "dev"], timeout=1000))
-            factory.addStep(ShellCommand(workdir="build/", command=["repo", "sync"], timeout=1000))
+            factory.addStep(ShellCommand(workdir="build", command=["repo", "init", "-u", "https://github.com/adam-lee/Gumstix-YoctoProject-Repo.git", "-b", "dev"], timeout=1000))
+            factory.addStep(ShellCommand(workdir="build/poky", command=["repo", "sync"], timeout=1000))
     elif defaultenv['ABTARGET'] == "oecore":
         factory.addStep(ShellCommand(doStepIf=setOECoreRepo,
                         description="Getting the requested git repo",
