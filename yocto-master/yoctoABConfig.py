@@ -127,6 +127,8 @@ defaultenv['PERSISTDB_DIR'] = PERSISTDB_DIR
 defaultenv['MAINTAIN_PERSISTDB'] = MAINTAIN_PERSISTDB
 defaultenv['ABBASE'] = ABBASE
 defaultenv['MIGPL'] = "False"
+defaultenv['SSTATE_MIRRORS'] = "file://.* http://sstate-cache.gumstix.org/PATH" 
+defaultenv['SOURCE_MIRROR_URL'] = "http://source-cache.gumstix.org" 
 
 class NoOp(buildstep.BuildStep):
     """
