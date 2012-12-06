@@ -305,7 +305,6 @@ def createBBLayersConf(factory, defaultenv, btarget=None, bsplayer=False, provid
             fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-openembedded/meta-xfce \ \n"
             fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-gumstix-bsp \ \n"
             fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-gumstix-extras \ \n"
-            #fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-gumstix \ \n"
     elif buildprovider=="oe":
         fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta \ \n"
     if bsplayer==True and provider=="intel":
@@ -352,6 +351,9 @@ def createAutoConf(factory, defaultenv, btarget=None, distro=None, buildhistory=
     fout = fout + 'BB_NUMBER_THREADS = "10"\n'
     fout = fout + 'PARALLEL_MAKE = "-j 16"\n'
     fout = fout + 'SDKMACHINE ?= "i586"\n'
+    fout = fout + 'INHERIT += "own-mirrors"\n'
+    fout = fout + 'SOURCE_MIRROR_URL = "http://source-cache.gumstix.org/" \n'
+    fout = fout + 'SSTATE_MIRRORS = "file://.* http://sstate-cache.gumstix.org/" \n'
     if defaultenv["ADTDEV"]=="True":
         factory.addStep(ShellCommand(doStepIf=checkYoctoBSPLayer, description="Adding dev adt-repo to auto.conf",
                         command=["sh", "-c", WithProperties("echo 'ADTREPO = \"" + defaultenv["ADTREPO_DEV_URL"] + "/%s-%s\" \n' > " + AUTOCONF, "SDKVERSION", "got_revision")],
@@ -506,7 +508,7 @@ def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
     createBBLayersConf(factory, defaultenv, btarget=machine, bsplayer=bsplayer, provider=provider, buildprovider=buildprovider)
     defaultenv['MACHINE'] = machine
     factory.addStep(ShellCommand, description=["Building", machine, image],
-                    command=["yocto-autobuild", image, "-k"],
+                    command=["yocto-autobuild", image, "-k", "-D"],
                     env=copy.copy(defaultenv),
                     timeout=24400)
 
