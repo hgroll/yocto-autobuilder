@@ -1248,6 +1248,11 @@ b1 = {'name': "nightly",
       'builddir': "nightly",
       'factory': f1
       }
+b2 = {'name': "nightly",
+      'slavenames': ["builder2"],
+      'builddir': "nightly",
+      'factory': f1
+      }
 
 yocto_builders.append(b1)
 yocto_sched.append(triggerable.Triggerable(name="nightly-gumstix", builderNames=["nightly-gumstix"]))
