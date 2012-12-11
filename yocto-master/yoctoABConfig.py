@@ -650,15 +650,6 @@ def makeCheckout(factory):
                         mode="clobber", 
                         branch=WithProperties("%s", "branch"),
                         timeout=10000, retry=(5, 3)))
-        #factory.addStep(ShellCommand(doStepIf=getTag, command=["git", "checkout",  WithProperties("%s", "pokytag")], timeout=1000))
-        #factory.addStep(ShellCommand(workdir="build", command=["git", "clone",  "git://git.yoctoproject.org/meta-qt3.git"], timeout=1000))
-        #factory.addStep(ShellCommand(doStepIf=getTag, workdir="build/meta-qt3", command=["git", "checkout",  WithProperties("%s", "otherbranch")], timeout=1000))
-        #factory.addStep(shell.SetProperty(workdir="build/meta-qt3",
-        #                command="git rev-parse HEAD",
-        #                property="QTHASH"))
-        #factory.addStep(ShellCommand(
-        #                description=["Building", WithProperties("%s", "branch"),  WithProperties("%s", "repository")],
-        #                command=["echo", WithProperties("%s", "branch"),  WithProperties("%s", "repository")]))
         if defaultenv['ABTARGET'] == "nightly-gumstix":
             factory.addStep(ShellCommand(workdir="build/poky", command=["git", "clone", "git://github.com/adam-lee/meta-gumstix.git"], timeout=1000))
             factory.addStep(ShellCommand,
@@ -1260,6 +1251,7 @@ b1 = {'name': "nightly",
 
 yocto_builders.append(b1)
 yocto_sched.append(triggerable.Triggerable(name="nightly-gumstix", builderNames=["nightly-gumstix"]))
+yocto_sched.append(triggerable.Triggerable(name="nightly-linaro", builderNames=["nightly-linaro"]))
 
 ################################################################################
 #
@@ -1294,3 +1286,35 @@ b97 = {'name': "nightly-gumstix",
       'factory': f97,
       }
 yocto_builders.append(b97)
+
+################################################################################
+#
+# Nightly Linaro 
+#
+################################################################################
+f95 = factory.BuildFactory()
+defaultenv['DISTRO'] = 'poky'
+defaultenv['ABTARGET'] = 'nightly-linaro'
+defaultenv['MACHINE'] = "overo"
+defaultenv['BRANCH'] = "denzil"
+defaultenv['ENABLE_SWABBER'] = 'false'
+defaultenv['MIGPL']="False"
+defaultenv['REVISION'] = "denzil"
+makeCheckout(f95)
+runPreamble(f95, defaultenv['ABTARGET'])
+defaultenv['SDKMACHINE'] = 'i686'
+f97.addStep(ShellCommand, description="Setting SDKMACHINE=i686", 
+            command="echo 'Setting SDKMACHINE=i686'", timeout=10)
+#nightlyBSP(f97, 'overo', 'poky', "yocto")
+runImage(f95, 'overo', 'gumstix-console-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
+runImage(f95, 'overo', 'gumstix-xfce-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
+publishArtifacts(f95, "toolchain","build/build/tmp")
+publishArtifacts(f95, "ipk", "build/build/tmp")
+runArchPostamble(f95, "poky", defaultenv['ABTARGET'])
+f95.addStep(NoOp(name="nightly"))
+b95 = {'name': "nightly-linaro",
+      'slavenames': ["builder2],
+      'builddir': "nightly-linaro",
+      'factory': f95,
+      }
+yocto_builders.append(b95)
