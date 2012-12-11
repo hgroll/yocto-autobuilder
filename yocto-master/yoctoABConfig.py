@@ -1313,7 +1313,7 @@ publishArtifacts(f95, "ipk", "build/build/tmp")
 runArchPostamble(f95, "poky", defaultenv['ABTARGET'])
 f95.addStep(NoOp(name="nightly"))
 b95 = {'name': "nightly-linaro",
-      'slavenames': ["builder2],
+      'slavenames': ["builder2"],
       'builddir': "nightly-linaro",
       'factory': f95,
       }
