@@ -1255,6 +1255,7 @@ b2 = {'name': "nightly",
       }
 
 yocto_builders.append(b1)
+yocto_builders.append(b2)
 yocto_sched.append(triggerable.Triggerable(name="nightly-gumstix", builderNames=["nightly-gumstix"]))
 yocto_sched.append(triggerable.Triggerable(name="nightly-linaro", builderNames=["nightly-linaro"]))
 
