@@ -513,7 +513,10 @@ def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
                     command=["yocto-autobuild", image, "-k", "-D"],
                     env=copy.copy(defaultenv),
                     timeout=24400)
-
+def runImageLinaro():
+    factory.addStep(ShellCommand, description=["Cloning Linux Kernel"],
+		    command=["git clone https://github.com/adam-lee/linux-1.git"],
+                    workdir="linaro")
 def runSanityTest(factory, machine, image):
     defaultenv['MACHINE'] = machine
     factory.addStep(ShellCommand, description=["Running sanity test for", 
@@ -1204,6 +1207,7 @@ def publishArtifacts(factory, artifact, tmpdir):
 #
 ################################################################################
 f1 = factory.BuildFactory()
+f2 = factory.BuildFactory()
 defaultenv['DISTRO'] = 'poky'
 defaultenv['ABTARGET'] = 'nightly'
 defaultenv['ENABLE_SWABBER'] = 'false'
@@ -1248,10 +1252,10 @@ b1 = {'name': "nightly",
       'builddir': "nightly",
       'factory': f1
       }
-b2 = {'name': "nightly",
+b2 = {'name': "nightly2",
       'slavenames': ["builder2"],
-      'builddir': "nightly",
-      'factory': f1
+      'builddir': "nightly2",
+      'factory': f2
       }
 
 yocto_builders.append(b1)
@@ -1299,25 +1303,12 @@ yocto_builders.append(b97)
 #
 ################################################################################
 f95 = factory.BuildFactory()
-defaultenv['DISTRO'] = 'poky'
 defaultenv['ABTARGET'] = 'nightly-linaro'
-defaultenv['MACHINE'] = "overo"
-defaultenv['BRANCH'] = "denzil"
 defaultenv['ENABLE_SWABBER'] = 'false'
-defaultenv['MIGPL']="False"
-defaultenv['REVISION'] = "denzil"
 makeCheckout(f95)
 runPreamble(f95, defaultenv['ABTARGET'])
-defaultenv['SDKMACHINE'] = 'i686'
-f97.addStep(ShellCommand, description="Setting SDKMACHINE=i686", 
-            command="echo 'Setting SDKMACHINE=i686'", timeout=10)
-#nightlyBSP(f97, 'overo', 'poky', "yocto")
-runImage(f95, 'overo', 'gumstix-console-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
-runImage(f95, 'overo', 'gumstix-xfce-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
-publishArtifacts(f95, "toolchain","build/build/tmp")
-publishArtifacts(f95, "ipk", "build/build/tmp")
-runArchPostamble(f95, "poky", defaultenv['ABTARGET'])
-f95.addStep(NoOp(name="nightly"))
+runImageLinaro()
+f95.addStep(NoOp(name="nightly2"))
 b95 = {'name': "nightly-linaro",
       'slavenames': ["builder2"],
       'builddir': "nightly-linaro",
