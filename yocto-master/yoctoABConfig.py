@@ -513,10 +513,16 @@ def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
                     command=["yocto-autobuild", image, "-k", "-D"],
                     env=copy.copy(defaultenv),
                     timeout=24400)
-def runImageLinaro():
+def runImageLinaro(factory):
     factory.addStep(ShellCommand, description=["Cloning Linux Kernel"],
-		    command=["git clone https://github.com/adam-lee/linux-1.git"],
-                    workdir="linaro")
+ 		    command=["git", "clone", "https://github.com/adam-lee/linux-1.git", "-b", "omap-3.5"],
+                    timeout=24400)
+    factory.addStep(ShellCommand, description=["Checking Out Ubuntu Kernel CI Tool"],
+ 		    command=["git", "clone", "https://github.com/adam-lee/ubuntu-kernel-ci.git", "-b", "overo"])
+    factory.addStep(ShellCommand, description=["building hwpack"], 
+		    command=["ubuntu-kernel-ci/scripts/package_kernel", "-k", "867031F1",  "--cfg", "ubuntu-kernel-ci/configs/sakoman-omap-3.5.cfg", "do_test_build_source_pkg=true", "do_lava_testing=true", "job_flavour=omap"])
+
+#scripts/package_kernel -uc -us --cfg configs/sakoman-omap-3.5.cfg do_test_build_source_pkg=true do_lava_testing=true job_flavour=omap
 def runSanityTest(factory, machine, image):
     defaultenv['MACHINE'] = machine
     factory.addStep(ShellCommand, description=["Running sanity test for", 
@@ -1307,7 +1313,7 @@ defaultenv['ABTARGET'] = 'nightly-linaro'
 defaultenv['ENABLE_SWABBER'] = 'false'
 makeCheckout(f95)
 runPreamble(f95, defaultenv['ABTARGET'])
-runImageLinaro()
+runImageLinaro(f95)
 f95.addStep(NoOp(name="nightly2"))
 b95 = {'name': "nightly-linaro",
       'slavenames': ["builder2"],
