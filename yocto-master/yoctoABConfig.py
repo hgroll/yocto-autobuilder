@@ -32,6 +32,7 @@ from buildbot.scheduler import Triggerable
 from buildbot.scheduler import Scheduler
 from buildbot.scheduler import Periodic
 from buildbot.scheduler import Nightly
+from buildbot.schedulers import timed
 from buildbot.schedulers import triggerable
 from buildbot.steps.trigger import Trigger
 from buildbot.steps import blocker
@@ -1267,8 +1268,8 @@ b2 = {'name': "nightly2",
 yocto_builders.append(b1)
 yocto_builders.append(b2)
 yocto_sched.append(triggerable.Triggerable(name="nightly-gumstix", builderNames=["nightly-gumstix"]))
-yocto_sched.append(triggerable.Triggerable(name="nightly-linaro", builderNames=["nightly-linaro"]))
-
+#yocto_sched.append(triggerable.Triggerable(name="nightly-linaro", builderNames=["nightly-linaro"]))
+	#builderNames=['nightly'],
 ################################################################################
 #
 # Nightly Gumstix 
@@ -1302,6 +1303,13 @@ b97 = {'name': "nightly-gumstix",
       'factory': f97,
       }
 yocto_builders.append(b97)
+yocto_sched.append(
+	timed.Nightly(name='nightly-gumstix-2',
+	branch=None,
+	builderNames=['nightly-gumstix'],
+	hour=0,
+	minute=26))
+
 
 ################################################################################
 #
@@ -1311,8 +1319,8 @@ yocto_builders.append(b97)
 f95 = factory.BuildFactory()
 defaultenv['ABTARGET'] = 'nightly-linaro'
 defaultenv['ENABLE_SWABBER'] = 'false'
-makeCheckout(f95)
-runPreamble(f95, defaultenv['ABTARGET'])
+#makeCheckout(f95)
+#runPreamble(f95, defaultenv['ABTARGET'])
 runImageLinaro(f95)
 f95.addStep(NoOp(name="nightly2"))
 b95 = {'name': "nightly-linaro",
@@ -1321,3 +1329,11 @@ b95 = {'name': "nightly-linaro",
       'factory': f95,
       }
 yocto_builders.append(b95)
+yocto_sched.append(
+	timed.Nightly(name='nightly-linaro-2',
+	branch=None,
+	builderNames=['nightly-linaro'],
+	hour=0,
+	minute=45))
+
+
