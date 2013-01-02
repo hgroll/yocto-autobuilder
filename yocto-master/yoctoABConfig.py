@@ -1298,7 +1298,7 @@ publishArtifacts(f97, "ipk", "build/build/tmp")
 runArchPostamble(f97, "poky", defaultenv['ABTARGET'])
 f97.addStep(NoOp(name="nightly"))
 b97 = {'name': "nightly-gumstix",
-      'slavenames': ["builder1"],
+      'slavenames': ["builder2"],
       'builddir': "nightly-gumstix",
       'factory': f97,
       }
@@ -1322,18 +1322,21 @@ defaultenv['ENABLE_SWABBER'] = 'false'
 #makeCheckout(f95)
 #runPreamble(f95, defaultenv['ABTARGET'])
 runImageLinaro(f95)
-f95.addStep(NoOp(name="nightly2"))
+f95.addStep(NoOp(name="nightly1"))
 b95 = {'name': "nightly-linaro",
-      'slavenames': ["builder2"],
+      'slavenames': ["builder1"],
       'builddir': "nightly-linaro",
       'factory': f95,
       }
 yocto_builders.append(b95)
+#yocto_sched.append(
+#	timed.Nightly(name='nightly-linaro-2',
+#	branch=None,
+#	builderNames=['nightly-linaro'],
+#	hour=18,
+#	minute=53))
+#
 yocto_sched.append(
-	timed.Nightly(name='nightly-linaro-2',
-	branch=None,
-	builderNames=['nightly-linaro'],
-	hour=0,
-	minute=45))
-
-
+		timed.Periodic(name="nightly-linaro-2",
+                builderNames=["nightly-linaro"],
+                periodicBuildTimer=360))
