@@ -528,6 +528,10 @@ def runImageLinaro(factory):
  		    command=["git", "clone", "https://github.com/adam-lee/ubuntu-kernel-ci.git", "-b", "overo"])
     factory.addStep(ShellCommand, description=["building hwpack"], 
 		    command=["ubuntu-kernel-ci/scripts/package_kernel", "-k", "867031F1",  "--cfg", "ubuntu-kernel-ci/configs/sakoman-omap-3.5.cfg", "do_test_build_source_pkg=true", "do_lava_testing=true", "job_flavour=omap"])
+    factory.addStep(ShellCommand, description=["Upload hwpack"], 
+		    command=["UploadLinaroToS3WithMD5.py", "./*/"],
+                    workdir="build/out")
+
 
 #scripts/package_kernel -uc -us --cfg configs/sakoman-omap-3.5.cfg do_test_build_source_pkg=true do_lava_testing=true job_flavour=omap
 def runSanityTest(factory, machine, image):
