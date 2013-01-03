@@ -515,9 +515,15 @@ def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
                     env=copy.copy(defaultenv),
                     timeout=24400)
 def runImageLinaro(factory):
+    factory.addStep(ShellCommand, description=["Cleaning old stuff"],
+		    command=["rm", "-rf", "new_kernel_build"],
+                    timeout=600, workdir="build/")
     factory.addStep(ShellCommand, description=["Cloning Linux Kernel"],
  		    command=["git", "clone", "https://github.com/adam-lee/linux-1.git", "-b", "omap-3.5"],
                     timeout=24400)
+    factory.addStep(ShellCommand, description=["Cleaning old stuff"],
+		    command=["rm", "-rf", "ubuntu-kernel-ci"],
+                    timeout=600, workdir="build/")
     factory.addStep(ShellCommand, description=["Checking Out Ubuntu Kernel CI Tool"],
  		    command=["git", "clone", "https://github.com/adam-lee/ubuntu-kernel-ci.git", "-b", "overo"])
     factory.addStep(ShellCommand, description=["building hwpack"], 
