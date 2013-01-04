@@ -515,6 +515,9 @@ def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
                     env=copy.copy(defaultenv),
                     timeout=24400)
 def runImageLinaro(factory):
+    factory.addStep(ShellCommand, description=["Getting Overo Config file to build hwpack"],
+                    command=["git", "clone", "https://github.com/adam-lee/linaro-overo-config.git"],
+                    timeout=60, workdir="build/")
     factory.addStep(ShellCommand, description=["Cleaning old stuff"],
 		    command=["rm", "-rf", "new_kernel_build"],
                     timeout=600, workdir="build/")
@@ -529,7 +532,7 @@ def runImageLinaro(factory):
     factory.addStep(ShellCommand, description=["building hwpack"], 
 		    command=["ubuntu-kernel-ci/scripts/package_kernel", "-k", "867031F1",  "--cfg", "ubuntu-kernel-ci/configs/sakoman-omap-3.5.cfg", "do_test_build_source_pkg=true", "do_lava_testing=true", "job_flavour=omap"])
     factory.addStep(ShellCommand, description=["Upload hwpack"], 
-		    command=["UploadLinaroToS3WithMD5.py", "./*/"],
+		    command=["UploadLinaroToS3WithMD5.py", "./"],
                     workdir="build/out")
 
 
@@ -1349,4 +1352,4 @@ yocto_builders.append(b95)
 yocto_sched.append(
 		timed.Periodic(name="nightly-linaro-2",
                 builderNames=["nightly-linaro"],
-                periodicBuildTimer=360))
+                periodicBuildTimer=600))
