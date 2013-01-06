@@ -519,12 +519,12 @@ def runImageLinaro(factory):
                     command=["git", "clone", "https://github.com/adam-lee/linaro-overo-config.git"],
                     timeout=60, workdir="build/")
     factory.addStep(ShellCommand, description=["Cleaning old stuff"],
-		    command=["rm", "-rf", "new_kernel_build"],
+		    command=["rm", "-rf", "new_kernel_build;", "rm", "-rf", "linaro-image-tools"],
                     timeout=600, workdir="build/")
     factory.addStep(ShellCommand, description=["Cloning Linux Kernel"],
  		    command=["git", "clone", "https://github.com/adam-lee/linux-1.git", "-b", "omap-3.5"],
                     timeout=24400)
-    factory.addStep(ShellCommand, description=["Cleaning old stuff"],
+    factory.addStep(ShellCommand, description=["Cleaning old Ubuntu Kernel CI Tool"],
 		    command=["rm", "-rf", "ubuntu-kernel-ci"],
                     timeout=600, workdir="build/")
     factory.addStep(ShellCommand, description=["Checking Out Ubuntu Kernel CI Tool"],
