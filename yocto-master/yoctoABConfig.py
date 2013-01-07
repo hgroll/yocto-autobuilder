@@ -1332,8 +1332,6 @@ yocto_sched.append(
 f95 = factory.BuildFactory()
 defaultenv['ABTARGET'] = 'nightly-linaro'
 defaultenv['ENABLE_SWABBER'] = 'false'
-#makeCheckout(f95)
-#runPreamble(f95, defaultenv['ABTARGET'])
 runImageLinaro(f95)
 f95.addStep(NoOp(name="nightly1"))
 b95 = {'name': "nightly-linaro",
@@ -1342,14 +1340,14 @@ b95 = {'name': "nightly-linaro",
       'factory': f95,
       }
 yocto_builders.append(b95)
-#yocto_sched.append(
-#	timed.Nightly(name='nightly-linaro-2',
-#	branch=None,
-#	builderNames=['nightly-linaro'],
-#	hour=18,
-#	minute=53))
-#
 yocto_sched.append(
-		timed.Periodic(name="nightly-linaro-2",
-                builderNames=["nightly-linaro"],
-                periodicBuildTimer=600))
+	timed.Nightly(name='nightly-linaro-2',
+	branch=None,
+	builderNames=['nightly-linaro'],
+	hour=18,
+	minute=53))
+
+#yocto_sched.append(
+#		timed.Periodic(name="nightly-linaro-2",
+#                builderNames=["nightly-linaro"],
+#                periodicBuildTimer=600))
