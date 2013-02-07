@@ -508,7 +508,7 @@ def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
                     command="cat " + BBLAYER + "|grep LCONF |sed 's/LCONF_VERSION = \"//'|sed 's/\"//'",
                     property="LCONF_VERSION")) 
     #createAutoConf(factory, defaultenv, btarget=machine, distro=distro, buildhistory=buildhistory)
-    createBBLayersConf(factory, defaultenv, btarget=machine, bsplayer=bsplayer, provider=provider, buildprovider=buildprovider)
+    #createBBLayersConf(factory, defaultenv, btarget=machine, bsplayer=bsplayer, provider=provider, buildprovider=buildprovider)
     defaultenv['MACHINE'] = machine
     factory.addStep(ShellCommand, description=["Building", machine, image],
                     command=["yocto-autobuild", image, "-k", "-D"],
@@ -665,15 +665,15 @@ def getTag(step):
     return True
 
 def makeCheckout(factory):
-    if defaultenv['ABTARGET'] != "oecore":
-        factory.addStep(ShellCommand(doStepIf=getRepo,
-                        description="Getting the requested git repo",
-                        command='echo "Getting the requested git repo"'))
+    #if defaultenv['ABTARGET'] != "oecore":
+    #    factory.addStep(ShellCommand(doStepIf=getRepo,
+    #                    description="Getting the requested git repo",
+    #                    command='echo "Getting the requested git repo"'))
         #factory.addStep(Git(
         #                mode="clobber", 
         #                branch=WithProperties("%s", "branch"),
         #                timeout=10000, retry=(5, 3)))
-        if defaultenv['ABTARGET'] == "nightly-gumstix":
+	if defaultenv['ABTARGET'] == "nightly-gumstix" and defaultenv['BRANCH'] == "denzil":
             #factory.addStep(ShellCommand(workdir="build/poky", command=["git", "clone", "git://github.com/adam-lee/meta-gumstix.git"], timeout=1000))
             #factory.addStep(ShellCommand,
             #                command="echo 'Checking out git://git.openembedded.org/meta-openembedded.git'",
@@ -688,26 +688,26 @@ def makeCheckout(factory):
             factory.addStep(ShellCommand(workdir="./", command=["sudo", "mv", "repo", "/usr/local/bin"], timeout=1000))
             factory.addStep(ShellCommand(workdir="build", command=["repo", "init", "-u", "https://github.com/gumstix/Gumstix-YoctoProject-Repo.git", "-b", "master"], timeout=1000))
             factory.addStep(ShellCommand(workdir="build/poky", command=["repo", "sync"], timeout=1000))
-    elif defaultenv['ABTARGET'] == "oecore":
-        factory.addStep(ShellCommand(doStepIf=setOECoreRepo,
-                        description="Getting the requested git repo",
-                        command='echo "Getting the requested git repo"'))
-        factory.addStep(Git(
-                        mode="clobber",
-                        repourl="git://git.openembedded.org/openembedded-core",
-                        branch="master",
-                        timeout=10000, retry=(5, 3)))
+    #elif defaultenv['ABTARGET'] == "oecore":
+    #    factory.addStep(ShellCommand(doStepIf=setOECoreRepo,
+    #                    description="Getting the requested git repo",
+    #                    command='echo "Getting the requested git repo"'))
+    #    factory.addStep(Git(
+    #                    mode="clobber",
+    #                    repourl="git://git.openembedded.org/openembedded-core",
+    #                    branch="master",
+    #                    timeout=10000, retry=(5, 3)))
         #factory.addStep(ShellCommand(workdir="build", command=["git", "clone",  "git://git.yoctoproject.org/meta-qt3.git"], timeout=1000))
         #factory.addStep(ShellCommand(workdir="build", command=["git", "clone", "git://git.openembedded.org/bitbake"], timeout=1000))
         #factory.addStep(ShellCommand(doStepIf=getTag, workdir="build/meta-qt3", command=["git", "checkout",  WithProperties("%s", "otherbranch")], timeout=1000))
         #factory.addStep(shell.SetProperty(workdir="build/meta-qt3",
         #                command="git rev-parse HEAD",
         #                property="QTHASH"))
-        factory.addStep(ShellCommand(
-                        description=["Building OE-Core Master"],
-                        command=["echo", "Building OE-Core Master"]))
-    elif defaultenv['ABTARGET'] == "nightly-x32": 
-        factory.addStep(ShellCommand(doStepIf=checkMultiOSSState, workdir="build", command=["git", "clone",  "git://git.yoctoproject.org/meta-qt3.git"], timeout=1000))
+#        factory.addStep(ShellCommand(
+#                        description=["Building OE-Core Master"],
+#                        command=["echo", "Building OE-Core Master"]))
+#    elif defaultenv['ABTARGET'] == "nightly-x32": 
+#        factory.addStep(ShellCommand(doStepIf=checkMultiOSSState, workdir="build", command=["git", "clone",  "git://git.yoctoproject.org/meta-qt3.git"], timeout=1000))
     #elif defaultenv['ABTARGET'] == "nightly-gumstix": 
 
 
@@ -1251,8 +1251,8 @@ defaultenv['REVISION'] = "denzil"
 makeCheckout(f97)
 runPreamble(f97, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
-f97.addStep(ShellCommand, description="Setting SDKMACHINE=i686", 
-            command="echo 'Setting SDKMACHINE=i686'", timeout=10)
+#f97.addStep(ShellCommand, description="Setting SDKMACHINE=i686", 
+#            command="echo 'Setting SDKMACHINE=i686'", timeout=10)
 runImage(f97, 'overo', 'gumstix-console-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
 runImage(f97, 'overo', 'gumstix-xfce-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
 publishArtifacts(f97, "toolchain","build/build/tmp")
