@@ -306,8 +306,7 @@ def createBBLayersConf(factory, defaultenv, btarget=None, bsplayer=False, provid
             fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-openembedded/meta-gnome \ \n"
             fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-openembedded/meta-oe \ \n"
             fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-openembedded/meta-xfce \ \n"
-            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-gumstix-bsp \ \n"
-            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-gumstix-extras \ \n"
+            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-gumstix \ \n"
     elif buildprovider=="oe":
         fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta \ \n"
     if bsplayer==True and provider=="intel":
@@ -489,6 +488,7 @@ def runBSPLayerPreamble(factory, target, provider):
 def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
     factory.addStep(ShellCommand, description=["Setting up build"],
                     command=["yocto-autobuild-preamble"],
+	   	    #command="TEMPLATECONF=meta-gumstix-extras/conf",
                     workdir="build", 
                     env=copy.copy(defaultenv),
                     timeout=24400)
@@ -507,7 +507,7 @@ def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
     factory.addStep(shell.SetProperty( 
                     command="cat " + BBLAYER + "|grep LCONF |sed 's/LCONF_VERSION = \"//'|sed 's/\"//'",
                     property="LCONF_VERSION")) 
-    createAutoConf(factory, defaultenv, btarget=machine, distro=distro, buildhistory=buildhistory)
+    #createAutoConf(factory, defaultenv, btarget=machine, distro=distro, buildhistory=buildhistory)
     createBBLayersConf(factory, defaultenv, btarget=machine, bsplayer=bsplayer, provider=provider, buildprovider=buildprovider)
     defaultenv['MACHINE'] = machine
     factory.addStep(ShellCommand, description=["Building", machine, image],
@@ -582,9 +582,9 @@ def runPreamble(factory, target):
     factory.addStep(ShellCommand(doStepIf=getRepo,
                     description="Getting the requested git repo",
                     command='echo "Getting the requested git repo"'))
-    factory.addStep(shell.SetProperty(workdir="build/meta-qt3",
-                    command="git rev-parse HEAD",
-                    property="QTHASH"))
+    #factory.addStep(shell.SetProperty(workdir="build/meta-qt3",
+    #                command="git rev-parse HEAD",
+    #                property="QTHASH"))
     factory.addStep(ShellCommand(doStepIf=doNightlyArchTest,
                     description="Syncing Local Build History Repo",
                     workdir=defaultenv['BUILD_HISTORY_DIR'] + "/" + defaultenv['ABTARGET'] + "/poky-buildhistory",
@@ -669,24 +669,24 @@ def makeCheckout(factory):
         factory.addStep(ShellCommand(doStepIf=getRepo,
                         description="Getting the requested git repo",
                         command='echo "Getting the requested git repo"'))
-        factory.addStep(Git(
-                        mode="clobber", 
-                        branch=WithProperties("%s", "branch"),
-                        timeout=10000, retry=(5, 3)))
+        #factory.addStep(Git(
+        #                mode="clobber", 
+        #                branch=WithProperties("%s", "branch"),
+        #                timeout=10000, retry=(5, 3)))
         if defaultenv['ABTARGET'] == "nightly-gumstix":
-            factory.addStep(ShellCommand(workdir="build/poky", command=["git", "clone", "git://github.com/adam-lee/meta-gumstix.git"], timeout=1000))
-            factory.addStep(ShellCommand,
-                            command="echo 'Checking out git://git.openembedded.org/meta-openembedded.git'",
-                            timeout=10)
-            factory.addStep(ShellCommand(workdir="build/poky/", command=["git", "clone",  "git://git.openembedded.org/meta-openembedded.git"], timeout=1000))
-            factory.addStep(ShellCommand(doStepIf=getTag, workdir="build/poky/meta-openembedded", command=["git", "checkout",  WithProperties("%s", "otherbranch")], timeout=1000))
-            factory.addStep(ShellCommand(workdir="./", command=["git", "clone",  "git://github.com/adam-lee/Gumstix-YoctoProject-Repo.git"], timeout=1000))
-            factory.addStep(ShellCommand(workdir="./", command=["git", "checkout",  "dev"], timeout=1000))
+            #factory.addStep(ShellCommand(workdir="build/poky", command=["git", "clone", "git://github.com/adam-lee/meta-gumstix.git"], timeout=1000))
+            #factory.addStep(ShellCommand,
+            #                command="echo 'Checking out git://git.openembedded.org/meta-openembedded.git'",
+            #                timeout=10)
+            #factory.addStep(ShellCommand(workdir="build/poky/", command=["git", "clone",  "git://git.openembedded.org/meta-openembedded.git"], timeout=1000))
+            #factory.addStep(ShellCommand(doStepIf=getTag, workdir="build/poky/meta-openembedded", command=["git", "checkout",  WithProperties("%s", "otherbranch")], timeout=1000))
+            factory.addStep(ShellCommand(workdir="./", command=["git", "clone",  "https://github.com/gumstix/Gumstix-YoctoProject-Repo.git"], timeout=1000))
+            factory.addStep(ShellCommand(workdir="./", command=["git", "checkout",  "master"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["sudo", "rm", "-rf", "Gumstix-YoctoProject-Repo"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["curl", "-o", "repo", "https://dl-ssl.google.com/dl/googlesource/git-repo/repo"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["chmod", "a+x", "repo"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["sudo", "mv", "repo", "/usr/local/bin"], timeout=1000))
-            factory.addStep(ShellCommand(workdir="build", command=["repo", "init", "-u", "https://github.com/adam-lee/Gumstix-YoctoProject-Repo.git", "-b", "dev"], timeout=1000))
+            factory.addStep(ShellCommand(workdir="build", command=["repo", "init", "-u", "https://github.com/gumstix/Gumstix-YoctoProject-Repo.git", "-b", "master"], timeout=1000))
             factory.addStep(ShellCommand(workdir="build/poky", command=["repo", "sync"], timeout=1000))
     elif defaultenv['ABTARGET'] == "oecore":
         factory.addStep(ShellCommand(doStepIf=setOECoreRepo,
@@ -697,12 +697,12 @@ def makeCheckout(factory):
                         repourl="git://git.openembedded.org/openembedded-core",
                         branch="master",
                         timeout=10000, retry=(5, 3)))
-        factory.addStep(ShellCommand(workdir="build", command=["git", "clone",  "git://git.yoctoproject.org/meta-qt3.git"], timeout=1000))
-        factory.addStep(ShellCommand(workdir="build", command=["git", "clone", "git://git.openembedded.org/bitbake"], timeout=1000))
-        factory.addStep(ShellCommand(doStepIf=getTag, workdir="build/meta-qt3", command=["git", "checkout",  WithProperties("%s", "otherbranch")], timeout=1000))
-        factory.addStep(shell.SetProperty(workdir="build/meta-qt3",
-                        command="git rev-parse HEAD",
-                        property="QTHASH"))
+        #factory.addStep(ShellCommand(workdir="build", command=["git", "clone",  "git://git.yoctoproject.org/meta-qt3.git"], timeout=1000))
+        #factory.addStep(ShellCommand(workdir="build", command=["git", "clone", "git://git.openembedded.org/bitbake"], timeout=1000))
+        #factory.addStep(ShellCommand(doStepIf=getTag, workdir="build/meta-qt3", command=["git", "checkout",  WithProperties("%s", "otherbranch")], timeout=1000))
+        #factory.addStep(shell.SetProperty(workdir="build/meta-qt3",
+        #                command="git rev-parse HEAD",
+        #                property="QTHASH"))
         factory.addStep(ShellCommand(
                         description=["Building OE-Core Master"],
                         command=["echo", "Building OE-Core Master"]))
@@ -1278,8 +1278,8 @@ b2 = {'name': "nightly2",
       'factory': f2
       }
 
-yocto_builders.append(b1)
-yocto_builders.append(b2)
+#yocto_builders.append(b1)
+#yocto_builders.append(b2)
 yocto_sched.append(triggerable.Triggerable(name="nightly-gumstix", builderNames=["nightly-gumstix"]))
 #yocto_sched.append(triggerable.Triggerable(name="nightly-linaro", builderNames=["nightly-linaro"]))
 	#builderNames=['nightly'],
@@ -1311,42 +1311,45 @@ publishArtifacts(f97, "ipk", "build/build/tmp")
 runArchPostamble(f97, "poky", defaultenv['ABTARGET'])
 f97.addStep(NoOp(name="nightly"))
 b97 = {'name': "nightly-gumstix",
-      'slavenames': ["builder2"],
+      'slavenames': ["builder1"],
       'builddir': "nightly-gumstix",
       'factory': f97,
       }
 yocto_builders.append(b97)
+#yocto_sched.append(
+#	timed.Nightly(name='nightly-gumstix-2',
+#	branch=None,
+#	builderNames=['nightly-gumstix'],
+#	hour=19,
+#	minute=00))
 yocto_sched.append(
-	timed.Nightly(name='nightly-gumstix-2',
-	branch=None,
-	builderNames=['nightly-gumstix'],
-	hour=0,
-	minute=26))
-
+		timed.Periodic(name="nightly-gumstix-2",
+                builderNames=["nightly-gumstix"],
+                periodicBuildTimer=180))
 
 ################################################################################
 #
 # Nightly Linaro 
 #
 ################################################################################
-f95 = factory.BuildFactory()
-defaultenv['ABTARGET'] = 'nightly-linaro'
-defaultenv['ENABLE_SWABBER'] = 'false'
-runImageLinaro(f95)
-f95.addStep(NoOp(name="nightly1"))
-b95 = {'name': "nightly-linaro",
-      'slavenames': ["builder1"],
-      'builddir': "nightly-linaro",
-      'factory': f95,
-      }
-yocto_builders.append(b95)
-yocto_sched.append(
-	timed.Nightly(name='nightly-linaro-2',
-	branch=None,
-	builderNames=['nightly-linaro'],
-	hour=18,
-	minute=53))
-
+#f95 = factory.BuildFactory()
+#defaultenv['ABTARGET'] = 'nightly-linaro'
+#defaultenv['ENABLE_SWABBER'] = 'false'
+#runImageLinaro(f95)
+#f95.addStep(NoOp(name="nightly1"))
+#b95 = {'name': "nightly-linaro",
+#      'slavenames': ["builder1"],
+#      'builddir': "nightly-linaro",
+#      'factory': f95,
+#      }
+#yocto_builders.append(b95)
+#yocto_sched.append(
+#	timed.Nightly(name='nightly-linaro-2',
+#	branch=None,
+#	builderNames=['nightly-linaro'],
+#	hour=18,
+#	minute=53))
+#
 #yocto_sched.append(
 #		timed.Periodic(name="nightly-linaro-2",
 #                builderNames=["nightly-linaro"],

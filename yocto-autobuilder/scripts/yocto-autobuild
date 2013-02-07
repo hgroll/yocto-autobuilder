@@ -29,7 +29,7 @@ cd $CURRDIR
 echo "Changed to $CURRDIR"
 
 BDIR="build"
-source ./oe-init-build-env
+source ./poky/oe-init-build-env
 
 # Additions needed to work behind a generic proxy
 #SITECONF="./conf/site.conf"
