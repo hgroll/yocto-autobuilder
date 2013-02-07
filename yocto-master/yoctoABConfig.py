@@ -688,7 +688,7 @@ def makeCheckout(factory):
             factory.addStep(ShellCommand(workdir="./", command=["sudo", "mv", "repo", "/usr/local/bin"], timeout=1000))
 	    if defaultenv['BRANCH'] == "denzil":
                factory.addStep(ShellCommand(workdir="build", command=["repo", "init", "-u", "https://github.com/gumstix/Gumstix-YoctoProject-Repo.git", "-b", "master"], timeout=1000))
-            else 
+            else:
                factory.addStep(ShellCommand(workdir="build", command=["repo", "init", "-u", "https://github.com/gumstix/Gumstix-YoctoProject-Repo.git", "-b", "dev"], timeout=1000))
             factory.addStep(ShellCommand(workdir="build/poky", command=["repo", "sync"], timeout=1000))
     #elif defaultenv['ABTARGET'] == "oecore":
