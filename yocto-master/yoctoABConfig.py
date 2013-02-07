@@ -45,15 +45,15 @@ from buildbot.steps.source import Git
 from buildbot.process.properties import Property
 from buildbot.steps.slave import SetPropertiesFromEnv
 
-yocto_projname = "Yocto"
-yocto_projurl = "http://yoctoproject.org/"
+yocto_projname = "Gumstix CI"
+yocto_projurl = "http://buildbot.gumstix.org/"
 yocto_sources = []
 yocto_sources.append(PBChangeSource())
 yocto_sched = []
 yocto_builders = []
 defaultenv = {}
 layerid = 0
-releases = ["denzil", "edison"]
+releases = ["denzil", "danny"]
 ABBASE = os.environ.get("PWD")
 SOURCE_DL_DIR = os.environ.get("SOURCE_DL_DIR")
 LSB_SSTATE_DIR = os.environ.get("LSB_SSTATE_DIR")
@@ -740,54 +740,6 @@ def doEMGDTest(step):
     else:
         return False 
 
-def setRandom(step):
-    step.setProperty("FuzzArch", random.choice( ['qemux86', 
-                                                 'qemux86-64', 
-                                                 'qemuarm', 
-                                                 'qemuppc', 
-                                                 'qemumips'] ))
-    step.setProperty("FuzzImage", random.choice( ['core-image-sato', 
-                                                  'core-image-sato-dev', 
-                                                  'core-image-sato-sdk', 
-                                                  'core-image-minimal', 
-                                                  'core-image-minimal-dev',
-                                                  'core-image-lsb', 
-                                                  'core-image-lsb-dev', 
-                                                  'core-image-lsb-sdk', 
-                                                  'core-image-lsb-qt3']))
-    step.setProperty("FuzzSDK", random.choice( ['i686', 'x86-64'] ))
-    imageType = step.getProperty("FuzzImage")
-    defaultenv['FuzzSDK'] = step.getProperty("FuzzSDK")
-    defaultenv['FuzzImage'] = step.getProperty("FuzzImage")
-    defaultenv['FuzzArch'] = step.getProperty("FuzzArch")
-    if imageType.endswith("lsb"):
-        step.setProperty("distro", "poky-lsb")  
-    else:
-        step.setProperty("distro", "poky")
-    return True
-
-def fuzzyBuild(factory):
-    factory.addStep(ShellCommand(doStepIf=setRandom,
-                    description="Setting to random build parameters",
-                    command='echo "Setting to random build parameters"'))
-    factory.addStep(ShellCommand(doStepIf=setRandom,
-                    description=["Building", WithProperties("%s", "FuzzImage"),  
-                                 WithProperties("%s", "FuzzArch"), 
-                                 WithProperties("%s", "FuzzSDK")],
-                    command=["echo", WithProperties("%s", "FuzzImage"),  
-                             WithProperties("%s", "FuzzArch"), 
-                             WithProperties("%s", "FuzzSDK")],
-                     env=copy.copy(defaultenv)))                                   
-    runPreamble(factory, defaultenv["FuzzArch"])
-    createAutoConf(factory, defaultenv, btarget=defaultenv["FuzzArch"], distro=defaultenv["FuzzImage"])
-    createBBLayersConf(factory, defaultenv, btarget=defaultenv["FuzzArch"], bsplayer=False, provider="intel")
-    factory.addStep(ShellCommand, 
-                    description=["Building", WithProperties("%s", "FuzzImage")],
-                    command=["yocto-autobuild", 
-                             WithProperties("%s", "FuzzImage"), "-k"],
-                    env=copy.copy(defaultenv),
-                    timeout=14400)
-
 def getMetaParams(step):
     defaultenv['MACHINE'] = step.getProperty("machine")
     defaultenv['SDKMACHINE'] = step.getProperty("sdk")
@@ -1301,9 +1253,6 @@ runPreamble(f97, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
 f97.addStep(ShellCommand, description="Setting SDKMACHINE=i686", 
             command="echo 'Setting SDKMACHINE=i686'", timeout=10)
-#nightlyBSP(f97, 'overo', 'poky', "yocto")
-#runImage(f97, 'overo', 'meta-toolchain-gmae', defaultenv['DISTRO'], False, "yocto", defaultenv['BUILD_HISTORY_COLLECT'])
-#runImage(f97, 'overo', 'meta-toolchain-gmae', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
 runImage(f97, 'overo', 'gumstix-console-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
 runImage(f97, 'overo', 'gumstix-xfce-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
 publishArtifacts(f97, "toolchain","build/build/tmp")
