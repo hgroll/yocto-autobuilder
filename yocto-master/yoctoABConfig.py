@@ -448,6 +448,20 @@ def checkYoctoBSPLayer(step):
         return False
     else:
         return True
+def checkBranchMaster(step):
+    branch = step.getProperty("branch")
+    if branch == "master":
+        return True 
+    else:
+        return False 
+def checkBranchDev(step):
+    branch = step.getProperty("branch")
+    if branch == "dev":
+        return True
+    else:
+        return False
+
+
 
 def doNightlyArchTest(step):
     buildername = step.getProperty("buildername")
@@ -490,18 +504,16 @@ def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
 		    command=["sh", "-c", WithProperties("rm -rf conf")],
 		    workdir="build/build",
 		    timeout=10)
-    if Property("branch") == "master":
-       factory.addStep(ShellCommand, description=["setting up build"],
-                       command=["yocto-autobuild-preamble"],
-                       workdir="build", 
-                       env=copy.copy(defaultenv),
-                       timeout=24400)
-    else:
-	factory.addStep(ShellCommand, description=["setting up build"],
-                       command=["yocto-autobuild-preamble-danny"],
-                       workdir="build", 
-                       env=copy.copy(defaultenv),
-                       timeout=24400)
+    factory.addStep(ShellCommand(doStepIf=checkBranchMaster,  description=["setting up build"],
+                    command=["yocto-autobuild-preamble"],
+                    workdir="build",
+                    env=copy.copy(defaultenv),
+                    timeout=24400))
+    factory.addStep(ShellCommand(doStepIf=checkBranchDev,  description=["setting up build"],
+                    command=["yocto-autobuild-preamble-danny"],
+                    workdir="build", 
+                    env=copy.copy(defaultenv),
+                    timeout=24400))
 
     if distro.startswith("poky"):
         buildprovider="yocto"
