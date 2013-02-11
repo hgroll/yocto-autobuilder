@@ -906,7 +906,7 @@ def publishArtifacts(factory, artifact, tmpdir):
 
 ################################################################################
 #
-# Nightly Gumstix 
+# Nightly Gumstix Overo Master
 #
 ################################################################################
 f97 = factory.BuildFactory()
@@ -926,16 +926,50 @@ publishArtifacts(f97, "toolchain","build/build/tmp")
 publishArtifacts(f97, "ipk", "build/build/tmp")
 #runArchPostamble(f97, "poky", defaultenv['ABTARGET'])
 f97.addStep(NoOp(name="nightly"))
-b97 = {'name': "nightly-gumstix",
+b97 = {'name': "nightly-gumstix-master",
       'slavenames': ["builder1"],
-      'builddir': "nightly-gumstix",
+      'builddir': "nightly-gumstix-master",
       'factory': f97,
       }
 yocto_builders.append(b97)
 yocto_sched.append(
-		timed.Periodic(name="nightly-gumstix-2",
-                builderNames=["nightly-gumstix"],
+		timed.Periodic(name="nightly-gumstix-master",
+                builderNames=["nightly-gumstix-master"],
                 periodicBuildTimer=7200))
+
+################################################################################
+#
+# Nightly Gumstix Overo Dev 
+#
+################################################################################
+f98 = factory.BuildFactory()
+defaultenv['DISTRO'] = 'poky'
+defaultenv['ABTARGET'] = 'nightly-gumstix'
+defaultenv['MACHINE'] = "overo"
+defaultenv['BRANCH'] = "danny"
+defaultenv['ENABLE_SWABBER'] = 'false'
+defaultenv['MIGPL']="False"
+defaultenv['REVISION'] = "danny"
+makeCheckout(f98)
+runPreamble(f98, defaultenv['ABTARGET'])
+defaultenv['SDKMACHINE'] = 'i686'
+runImage(f98, 'overo', 'gumstix-console-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
+runImage(f98, 'overo', 'gumstix-xfce-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
+publishArtifacts(f98, "toolchain","build/build/tmp")
+publishArtifacts(f98, "ipk", "build/build/tmp")
+#runArchPostamble(f97, "poky", defaultenv['ABTARGET'])
+f98.addStep(NoOp(name="nightly"))
+b98 = {'name': "nightly-gumstix-dev",
+      'slavenames': ["builder1"],
+      'builddir': "nightly-gumstix-dev",
+      'factory': f98,
+      }
+yocto_builders.append(b98)
+yocto_sched.append(
+		timed.Periodic(name="nightly-gumstix-dev",
+                builderNames=["nightly-gumstix-dev"],
+                periodicBuildTimer=7200))
+
 
 ################################################################################
 #
