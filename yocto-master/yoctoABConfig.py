@@ -266,14 +266,14 @@ def setAllEnv(factory):
     factory.addStep(SetPropertiesFromEnv(variables=["BUILD_HISTORY_DIR"]))
     factory.addStep(SetPropertiesFromEnv(variables=["BUILD_HISTORY_REPO"]))
     factory.addStep(SetPropertiesFromEnv(variables=["BUILD_HISTORY_COLLECT"]))
-    factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_POPULATE"]))
-    factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_DEV_POPULATE"]))
-    factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_GENERATE_INSTALLER"]))
-    factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_GENERATE_DEV_INSTALLER"]))
-    factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_URL"]))
-    factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_PATH"]))
-    factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_DEV_URL"]))
-    factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_DEV_PATH"]))
+    #factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_POPULATE"]))
+    #factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_DEV_POPULATE"]))
+    #factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_GENERATE_INSTALLER"]))
+    #factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_GENERATE_DEV_INSTALLER"]))
+    #factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_URL"]))
+    #factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_PATH"]))
+    #factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_DEV_URL"]))
+    #factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_DEV_PATH"]))
 
 def createBBLayersConf(factory, defaultenv, btarget=None, bsplayer=False, provider=None, buildprovider=None):
     factory.addStep(SetPropertiesFromEnv(variables=["SLAVEBASEDIR"]))
@@ -329,90 +329,6 @@ def createBBLayersConf(factory, defaultenv, btarget=None, bsplayer=False, provid
                         command="echo 'BBLAYERS += \"" + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-x32\"'>>" + BBLAYER,
                         timeout=60))
 
-def createAutoConf(factory, defaultenv, btarget=None, distro=None, buildhistory="False"):
-    sstate_branch = ""
-    factory.addStep(ShellCommand(doStepIf=getSlaveBaseDir,
-                    env=copy.copy(defaultenv),
-                    command='echo "Getting the slave basedir"'))
-    if defaultenv['MIGPL']=="True":
-        slavehome = "meta-intel-gpl"
-    else:
-        slavehome = defaultenv['ABTARGET']
-    BBLAYER = defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/build/conf/bblayers.conf"
-    AUTOCONF = defaultenv['SLAVEBASEDIR'] + "/" + slavehome +  "/build/build/conf/auto.conf"
-    setLCONF(factory, defaultenv)
-    factory.addStep(ShellCommand(warnOnFailure=True, description="Ensuring auto.conf removal",
-                    command="echo '' >> " + AUTOCONF,
-                    timeout=60))
-    factory.addStep(ShellCommand(warnOnFailure=True, description="Remove old auto.conf",
-                    command="rm " +  AUTOCONF,
-                    timeout=60))
-    fout = 'PACKAGE_CLASSES = "package_rpm"\n'
-    fout = fout + 'BB_NUMBER_THREADS = "10"\n'
-    fout = fout + 'PARALLEL_MAKE = "-j 16"\n'
-    fout = fout + 'SDKMACHINE ?= "i586"\n'
-    fout = fout + 'INHERIT += "own-mirrors"\n'
-    fout = fout + 'SOURCE_MIRROR_URL = "http://source-cache.gumstix.org/" \n'
-    fout = fout + 'SSTATE_MIRRORS = "file://.* http://sstate-cache.gumstix.org/" \n'
-    if defaultenv["ADTDEV"]=="True":
-        factory.addStep(ShellCommand(doStepIf=checkYoctoBSPLayer, description="Adding dev adt-repo to auto.conf",
-                        command=["sh", "-c", WithProperties("echo 'ADTREPO = \"" + defaultenv["ADTREPO_DEV_URL"] + "/%s-%s\" \n' > " + AUTOCONF, "SDKVERSION", "got_revision")],
-                        timeout=60))
-    if 'build-appliance' in defaultenv['ABTARGET']:
-        fout = fout + 'DL_DIR ?= "${TOPDIR}/downloads"\n'
-        fout = fout + 'INHERIT += "own-mirrors"\n'
-        fout = fout + 'SOURCE_MIRROR_URL = "file:///' + defaultenv['DL_DIR']+'"\n'
-    else:
-        fout = fout + 'DL_DIR = "' + defaultenv['DL_DIR']+'"\n'
-        fout = fout + 'PREMIRRORS = ""\n'
-    if str(btarget) == "fri2" or str(btarget) == "crownbay" or "sys940x":
-        fout = fout + 'LICENSE_FLAGS_WHITELIST += "license_emgd-driver-bin" \n'
-    if str(btarget) == "cedartrail":
-        fout = fout + 'LICENSE_FLAGS_WHITELIST += "license_cdv-pvr-driver" \n'
-        fout = fout + 'PVR_LICENSE = "yes" \n'
-    if "multilib" in defaultenv['ABTARGET']:
-        fout = fout + 'require conf/multilib.conf \n'
-        fout = fout + 'MULTILIBS = "multilib:lib32" \n'
-        fout = fout + 'DEFAULTTUNE_virtclass-multilib-lib32 = "x86" \n'
-        factory.addStep(ShellCommand(doStepIf=checkMultiOSSState, description="Adding sstate_dir to auto.conf",
-                        command=["sh", "-c", WithProperties("echo 'SSTATE_DIR ?= \"" + defaultenv['SSTATE_DIR'] + "/multilib\"\n' >> " + AUTOCONF)],
-                        timeout=60))
-    else:
-        factory.addStep(ShellCommand(doStepIf=checkMultiOSSState, description="Adding shared sstate_dir to auto.conf",
-                        command=["sh", "-c", WithProperties("echo 'SSTATE_DIR ?= \"" + defaultenv['SSTATE_DIR'] + "\"\n' >> " + AUTOCONF)],
-                        timeout=60))
-        factory.addStep(ShellCommand(doStepIf=(lambda(step): step.build.getProperties().has_key("PRE13")),  description="Adding non-shared sstate_dir to auto.conf",
-                        command=["sh", "-c", WithProperties("echo 'SSTATE_DIR ?= \"" + defaultenv['SLAVEBASEDIR'] + "/pre-1.3-sstate\"\n' >> " + AUTOCONF)],
-                        timeout=60))
-    if "x32" in defaultenv['ABTARGET']:
-        fout = fout + 'DEFAULTTUNE = "x86-64-x32" \n'
-    if "gpl3" in defaultenv['ABTARGET']:
-        fout = fout + 'INCOMPATIBLE_LICENSE = "GPLv3" \n'
-    if distro == "poky-rt":
-        fout = fout + 'PREFERRED_PROVIDER_virtual/kernel="linux-yocto-rt" \n'
-    fout = fout + 'MACHINE = "' + str(btarget) + '"\n'
-    if defaultenv['ENABLE_SWABBER'] == "True":
-        fout = fout + 'USER_CLASSES += "image-prelink image-swab"\n'
-    if defaultenv['ENABLE_SWABBER'] == "True":
-        fout = fout + 'USER_CLASSES += "image-prelink image-swab"\n'
-    if PUBLISH_SOURCE_MIRROR == "True":
-        fout = fout + 'BB_GENERATE_MIRROR_TARBALLS = "1"\n'
-    factory.addStep(ShellCommand(description="Creating auto.conf",
-                    command="echo '" +  fout + "'>>" + AUTOCONF,
-                    timeout=60))
-    if str(buildhistory) == "True" and defaultenv['BUILD_HISTORY_COLLECT'] == "True":
-        fout = fout + 'INHERIT += "buildhistory"\n'
-        fout = fout + 'BUILDHISTORY_COMMIT = "1"\n'
-        fout = fout + 'BUILDHISTORY_DIR = "' + defaultenv['BUILD_HISTORY_DIR'] + '/' + slavehome + '/poky-buildhistory"\n'
-        fout = fout + 'BUILDHISTORY_PUSH_REPO = "' + defaultenv['BUILD_HISTORY_REPO'] + ' ' + slavehome + ':' + defaultenv['ABTARGET'] + '"\n'
-    factory.addStep(ShellCommand(doStepIf=doNightlyArchTest, description="Adding buildhistory to auto.conf",
-                    command="echo '" +  fout + "'>>" + AUTOCONF,
-                    timeout=60))
-    if "x32" in defaultenv['ABTARGET']:
-        factory.addStep(ShellCommand(description="Adding x32 support to auto.conf",
-                        command="echo -e 'baselib = \\042${@d.getVar(\\047BASE_LIB_tune-\\047 + (d.getVar(\\047DEFAULTTUNE\\047, True) or \\047INVALID\\047), True) or \\047lib\\047}\\042 \n' >> " + AUTOCONF,
-                        timeout=60))
-
 def doMasterTest(step):
     branch = step.getProperty("branch")
     if branch == "master":
@@ -458,44 +374,6 @@ def checkBranchDev(step):
         return True
     else:
         return False
-
-
-
-def doNightlyArchTest(step):
-    buildername = step.getProperty("buildername")
-    branch = step.getProperty("branch")
-    for arch in nightly_arch:
-        if "nightly-" + arch in buildername and branch == "master" and defaultenv['BUILD_HISTORY_COLLECT'] == "True":
-            return True
-    return False
-
-def runBSPLayerPreamble(factory, target, provider):
-    factory.addStep(shell.SetProperty(workdir="build", 
-                    command="git rev-parse HEAD", 
-                    property="POKYHASH"))
-    if provider=="intel":
-        factory.addStep(ShellCommand, 
-                        command="echo 'Checking out git://git.yoctoproject.org/meta-intel.git'",
-                        timeout=10)
-        factory.addStep(ShellCommand(workdir="build/yocto/", command=["git", "clone",  "git://git.yoctoproject.org/meta-intel.git"], timeout=1000))
-        factory.addStep(ShellCommand(doStepIf=getTag, workdir="build/yocto/meta-intel", command=["git", "checkout",  WithProperties("%s", "otherbranch")], timeout=1000))
-        factory.addStep(ShellCommand(doStepIf=doEMGDTest, 
-                        description="Copying EMGD", 
-                        workdir="build",
-                        command="tar xvzf " + defaultenv['EMGD_DRIVER_DIR'] + "/emgd-driver-bin-1.8.tar.gz -C yocto/meta-intel",
-                        timeout=600))
-    elif provider=="fsl":
-       factory.addStep(ShellCommand,
-                       command="echo 'Checking out git://git.yoctoproject.org/meta-fsl-ppc.git'",
-                       timeout=10)
-       factory.addStep(ShellCommand(workdir="build/yocto/", command=["git", "clone",  "git://git.yoctoproject.org/meta-fsl-ppc.git"], timeout=1000))
-       factory.addStep(ShellCommand(doStepIf=getTag, workdir="build/yocto/meta-fsl-ppc", command=["git", "checkout",  WithProperties("%s", "otherbranch")], timeout=1000))
-    elif provider=="oe":
-       factory.addStep(ShellCommand,
-                       command="echo 'Checking out git://git.openembedded.org/meta-openembedded.git'",
-                       timeout=10)
-       factory.addStep(ShellCommand(workdir="build/yocto/", command=["git", "clone",  "git://git.openembedded.org/meta-openembedded.git"], timeout=1000))
-       factory.addStep(ShellCommand(doStepIf=getTag, workdir="build/yocto/meta-openembedded", command=["git", "checkout",  WithProperties("%s", "otherbranch")], timeout=1000))
 
 def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
     factory.addStep(ShellCommand, description=["cleaning configuration directory"],
@@ -599,26 +477,6 @@ def runPreamble(factory, target):
     factory.addStep(ShellCommand(doStepIf=getRepo,
                     description="Getting the requested git repo",
                     command='echo "Getting the requested git repo"'))
-    factory.addStep(ShellCommand(doStepIf=doNightlyArchTest,
-                    description="Syncing Local Build History Repo",
-                    workdir=defaultenv['BUILD_HISTORY_DIR'] + "/" + defaultenv['ABTARGET'] + "/poky-buildhistory",
-                    command=["git", "pull", "origin", target],
-                    timeout=2000))
-    if MAINTAIN_PERSISTDB == "True":
-        factory.addStep(ShellCommand(doStepIf=doNightlyArchTest, flunkOnFailure=False, warnOnFailure=True,
-                        description="Creating directory structure to link to bb_persist_data.sqlite3",
-                        workdir="build/build/",
-                        command="mkdir -p tmp/cache",
-                        timeout=2000))
-        factory.addStep(ShellCommand(doStepIf=doNightlyArchTest, flunkOnFailure=False, warnOnFailure=True,
-                        description="Ensuring arch specific bb_persist_data.sqlite3 directory exists",
-                        command=["mkdir", "-p", WithProperties(defaultenv['PERSISTDB_DIR'] + "/%s/%s/"+defaultenv['DISTRO']+"", "buildername", "otherbranch")],
-                        timeout=2000))
-        factory.addStep(ShellCommand(doStepIf=doNightlyArchTest, 
-                        description="Copying bb_persist_data.sqlite3",
-                        workdir="build/build/tmp/cache",
-                        command=["cp", "-R", WithProperties(defaultenv['PERSISTDB_DIR'] +"/%s/%s/"+defaultenv['DISTRO']+"/bb_persist_data.sqlite3", "buildername", "otherbranch"), "bb_persist_data.sqlite3"],
-                        timeout=2000))
 
 def getRepo(step):
     gitrepo = step.getProperty("repository")
@@ -731,77 +589,6 @@ def getCleanSS(step):
     else:
         return False
 
-def metaBuild(factory):
-    defaultenv['IMAGETYPES'] = ""
-    defaultenv['SDKMACHINE'] = ""
-    factory.addStep(ShellCommand(doStepIf=getMetaParams,
-                    description="Getting to meta build parameters",
-                    command='echo "Getting to meta build parameters"'))
-    runPreamble(factory, WithProperties("%s", "machine"))
-    factory.addStep(ShellCommand, description=["Setting up build"],
-                    command=["yocto-autobuild-preamble"],
-                    workdir="build", 
-                    env=copy.copy(defaultenv),
-                    timeout=14400)                                                 
-    createAutoConf(factory, defaultenv, btarget=defaultenv["machine"], distro="poky")
-    createBBLayersConf(factory, defaultenv, btarget=defaultenv["machine"], bsplayer=False, provider="intel")
-    factory.addStep(ShellCommand, description=["Building", WithProperties("%s", "MetaImage")],
-                    command=["yocto-autobuild", WithProperties("%s", "MetaImage"), "-k"],
-                    env=copy.copy(defaultenv),
-                    timeout=14400)
-
-def nightlyQEMU(factory, machine, distrotype, provider):
-    if distrotype == "poky":
-        defaultenv['DISTRO'] = "poky"
-        runImage(factory, machine, 
-#                 'core-image-sato core-image-sato-dev core-image-sato-sdk core-image-minimal core-image-minimal-dev     gumstix-console-image', 
-                 'gumstix-console-image', 
-                 distrotype, False, provider, defaultenv['BUILD_HISTORY_COLLECT'])
-        publishArtifacts(factory, machine, "build/build/tmp")
-        publishArtifacts(factory, "ipk", "build/build/tmp")
-        publishArtifacts(factory, "rpm", "build/build/tmp")
-        publishArtifacts(factory, "deb", "build/build/tmp")
-        runSanityTest(factory, machine, 'core-image-sato')
-        runSanityTest(factory, machine, 'core-image-minimal')
-    elif distrotype == "poky-lsb":
-        defaultenv['DISTRO'] = "poky-lsb"
-        runImage(factory, machine, 
-                 'core-image-lsb core-image-lsb-dev core-image-lsb-sdk core-image-lsb-qt3', 
-                 distrotype, False, provider, False)
-        publishArtifacts(factory, machine, "build/build/tmp")
-        publishArtifacts(factory, "ipk", "build/build/tmp")
-        publishArtifacts(factory, "rpm", "build/build/tmp")
-        publishArtifacts(factory, "deb", "build/build/tmp")
-    elif distrotype == "poky-rt":
-        defaultenv['DISTRO'] = "poky"
-        runImage(factory, machine, 'core-image-rt', distrotype, False, provider, False)
-        # For now, it's enough to just build them. 
-        #publishArtifacts(factory, machine, "build/build/tmp")
-        #publishArtifacts(factory, "ipk", "build/build/tmp")
-        #publishArtifacts(factory, "rpm", "build/build/tmp")
-    defaultenv['DISTRO'] = 'poky'
-
-def nightlyBSP(factory, machine, distrotype, provider):
-    if distrotype == "poky":
-        defaultenv['DISTRO'] = 'poky'
-        runImage(factory, machine, 
-                 'core-image-sato core-image-sato-sdk core-image-minimal', 
-                 distrotype, False, provider, False)
-        publishArtifacts(factory, machine, "build/build/tmp")
-        publishArtifacts(factory, "ipk", "build/build/tmp")
-        publishArtifacts(factory, "rpm", "build/build/tmp")
-        publishArtifacts(factory, "deb", "build/build/tmp")
-    elif distrotype == "poky-lsb":
-        defaultenv['DISTRO'] = 'poky-lsb'
-        runImage(factory, machine,  
-                 'core-image-lsb-qt3 core-image-lsb-sdk', 
-                 distrotype, False, provider, False)
-        publishArtifacts(factory, machine, "build/build/tmp")
-        publishArtifacts(factory, "ipk", "build/build/tmp")
-        publishArtifacts(factory, "rpm", "build/build/tmp")
-        publishArtifacts(factory, "deb", "build/build/tmp")
-    defaultenv['DISTRO'] = 'poky'
-                   
 def setBSPLayerRepo(step):
 ####################
 # WIP web selectable layer support
@@ -1119,94 +906,6 @@ def publishArtifacts(factory, artifact, tmpdir):
 
 ################################################################################
 #
-# BuildSets Section
-# These are predefined buildsets used on the yocto-project production autobuilder
-#
-################################################################################
-
-#f0 = factory.BuildFactory()
-#defaultenv['DISTRO'] = 'poky'
-#defaultenv['ABTARGET'] = 'nightly-test'
-#defaultenv['ENABLE_SWABBER'] = 'false'
-#defaultenv['MIGPL']="False"
-#defaultenv['REVISION'] = "HEAD"
-#makeCheckout(f0)
-#runPreamble(f0, defaultenv['ABTARGET'])
-#setSDKVERSION(f0, defaultenv)
-#if ADTREPO_GENERATE_DEV_INSTALLER == "True":
-#    defaultenv["ADTDEV"]="True"
-#    runImage(f0, 'qemux86', 'adt-installer', "poky", False, "yocto", False)
-#    publishArtifacts(f0, "adt_installer-QA", "build/build/tmp")
-#    defaultenv["ADTDEV"]="False"
-#b0 = {'name': "nightly-test",
-#      'slavenames': ["ab01.i.yoctoproject.org"],
-#      'builddir': "nightly-test",
-#      'factory': f0
-#      }
-#
-#yocto_builders.append(b0)
-
-
-################################################################################
-#
-# Nightly Release Builder
-#
-################################################################################
-f1 = factory.BuildFactory()
-f2 = factory.BuildFactory()
-defaultenv['DISTRO'] = 'poky'
-defaultenv['ABTARGET'] = 'nightly'
-defaultenv['ENABLE_SWABBER'] = 'false'
-defaultenv['MIGPL']="False"
-defaultenv['REVISION'] = "HEAD"
-makeCheckout(f1)
-runPreamble(f1, defaultenv['ABTARGET'])
-runImage(f1, 'qemux86', 'universe -c fetch', "poky", False, "yocto", False)
-f1.addStep(Trigger(schedulerNames=['nightly-gumstix'],
-                            updateSourceStamp=False,
-                            set_properties={'DEST': Property("DEST")},
-                            waitForFinish=False))
-f1.addStep(YoctoBlocker(idlePolicy="block", timeout=62400, upstreamSteps=[
-                                        ("nightly-gumstix", "nightly")]))
-runPostamble(f1)
-f1.addStep(ShellCommand, 
-            description="Prepping for package-index creation by copying ipks back to main builddir", workdir="build/build/tmp/deploy",
-            command=["sh", "-c", WithProperties("cp -R %s/ipk ipk", "DEST")])
-f1.addStep(ShellCommand,
-            description="Prepping for package-index creation by copying rpms back to main builddir", workdir="build/build/tmp/deploy",
-            command=["sh", "-c", WithProperties("cp -R %s/rpm rpm", "DEST")])
-defaultenv['SDKMACHINE'] = 'i686'
-runImage(f1, 'qemux86', 'package-index', "poky", False, "yocto", False)
-defaultenv['SDKMACHINE'] = 'x86_64'
-runImage(f1, 'qemux86', 'package-index', "poky", False, "yocto", False)
-publishArtifacts(f1, "ipk", "build/build/tmp")
-publishArtifacts(f1, "rpm", "build/build/tmp")
-setSDKVERSION(f1, defaultenv)
-if ADTREPO_GENERATE_INSTALLER == "True":
-    defaultenv["ADTDEV"]="False"
-    runImage(f1, 'qemux86', 'adt-installer', "poky", False, "yocto", False)
-    publishArtifacts(f1, "adt_installer", "build/build/tmp")
-if ADTREPO_GENERATE_DEV_INSTALLER == "True":
-    defaultenv["ADTDEV"]="True"
-    runImage(f1, 'qemux86', 'adt-installer', "poky", False, "yocto", False)
-    publishArtifacts(f1, "adt_installer-QA", "build/build/tmp")
-    defaultenv["ADTDEV"]="False"
-if ADTREPO_DEV_POPULATE == "True":
-    publishArtifacts(f1, "adtrepo-dev", "build/build/tmp")
-b1 = {'name': "nightly",
-      'slavenames': ["builder1"],
-      'builddir': "nightly",
-      'factory': f1
-      }
-b2 = {'name': "nightly2",
-      'slavenames': ["builder2"],
-      'builddir': "nightly2",
-      'factory': f2
-      }
-
-yocto_sched.append(triggerable.Triggerable(name="nightly-gumstix", builderNames=["nightly-gumstix"]))
-################################################################################
-#
 # Nightly Gumstix 
 #
 ################################################################################
@@ -1225,7 +924,7 @@ runImage(f97, 'overo', 'gumstix-console-image', defaultenv['DISTRO'], False, "gu
 runImage(f97, 'overo', 'gumstix-xfce-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
 publishArtifacts(f97, "toolchain","build/build/tmp")
 publishArtifacts(f97, "ipk", "build/build/tmp")
-runArchPostamble(f97, "poky", defaultenv['ABTARGET'])
+#runArchPostamble(f97, "poky", defaultenv['ABTARGET'])
 f97.addStep(NoOp(name="nightly"))
 b97 = {'name': "nightly-gumstix",
       'slavenames': ["builder1"],
