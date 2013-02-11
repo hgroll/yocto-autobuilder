@@ -486,12 +486,23 @@ def runBSPLayerPreamble(factory, target, provider):
        factory.addStep(ShellCommand(doStepIf=getTag, workdir="build/yocto/meta-openembedded", command=["git", "checkout",  WithProperties("%s", "otherbranch")], timeout=1000))
 
 def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
-    factory.addStep(ShellCommand, description=["Setting up build"],
-                    command=["yocto-autobuild-preamble"],
-	   	    #command="TEMPLATECONF=meta-gumstix-extras/conf",
-                    workdir="build", 
-                    env=copy.copy(defaultenv),
-                    timeout=24400)
+    factory.addStep(ShellCommand, description=["cleaning configuration directory"],
+		    command=["sh", "-c", WithProperties("rm -rf conf")],
+		    workdir="build/build",
+		    timeout=10)
+    if Property("branch") == "master":
+       factory.addStep(ShellCommand, description=["setting up build"],
+                       command=["yocto-autobuild-preamble"],
+                       workdir="build", 
+                       env=copy.copy(defaultenv),
+                       timeout=24400)
+    else:
+	factory.addStep(ShellCommand, description=["setting up build"],
+                       command=["yocto-autobuild-preamble-danny"],
+                       workdir="build", 
+                       env=copy.copy(defaultenv),
+                       timeout=24400)
+
     if distro.startswith("poky"):
         buildprovider="yocto"
     else:
@@ -503,12 +514,30 @@ def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
         slavehome = "meta-intel-gpl"
     else:
         slavehome = defaultenv['ABTARGET']
+        #createAutoConf(factory, defaultenv, btarget=machine, distro=distro, buildhistory=buildhistory)
+    #createBBLayersConf(factory, defaultenv, btarget=machine, bsplayer=bsplayer, provider=provider, buildprovider=buildprovider)
+#    if Property("revision") == "master":
+#	factory.addStep(ShellCommand, 
+#			description="Copying bblayers.conf",
+#			command = "cp poky/meta-gumstix/conf/bblayers.conf.sample build/conf/bblayers.conf",
+#			timeout=10)
+#	factory.addStep(ShellCommand, 
+#			description="Copying local.conf",
+#			command = "cp poky/meta-gumstix/conf/local.conf.sample build/conf/local.conf",
+#			timeout=10)
+#    elif WithProperties("%s", "branch") == "dev":
+#    	factory.addStep(ShellCommand, 
+#			description="Copying bblayers.conf",
+#			command = "cp poky/meta-gumstix-extras/conf/bblayers.conf.sample build/conf/bblayers.conf",
+#			timeout=10)
+#	factory.addStep(ShellCommand, 
+#			description="Copying local.conf",
+#			command = "cp poky/meta-gumstix-extras/conf/local.conf.sample build/conf/local.conf",
+#			timeout=10)
     BBLAYER = defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/build/conf/bblayers.conf"
     factory.addStep(shell.SetProperty( 
                     command="cat " + BBLAYER + "|grep LCONF |sed 's/LCONF_VERSION = \"//'|sed 's/\"//'",
                     property="LCONF_VERSION")) 
-    #createAutoConf(factory, defaultenv, btarget=machine, distro=distro, buildhistory=buildhistory)
-    #createBBLayersConf(factory, defaultenv, btarget=machine, bsplayer=bsplayer, provider=provider, buildprovider=buildprovider)
     defaultenv['MACHINE'] = machine
     factory.addStep(ShellCommand, description=["Building", machine, image],
                     command=["yocto-autobuild", image, "-k", "-D"],
@@ -686,10 +715,7 @@ def makeCheckout(factory):
             factory.addStep(ShellCommand(workdir="./", command=["curl", "-o", "repo", "https://dl-ssl.google.com/dl/googlesource/git-repo/repo"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["chmod", "a+x", "repo"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["sudo", "mv", "repo", "/usr/local/bin"], timeout=1000))
-	    if defaultenv['BRANCH'] == "denzil":
-               factory.addStep(ShellCommand(workdir="build", command=["repo", "init", "-u", "https://github.com/gumstix/Gumstix-YoctoProject-Repo.git", "-b", "master"], timeout=1000))
-            else:
-               factory.addStep(ShellCommand(workdir="build", command=["repo", "init", "-u", "https://github.com/gumstix/Gumstix-YoctoProject-Repo.git", "-b", "dev"], timeout=1000))
+	    factory.addStep(ShellCommand(workdir="build", command=["repo", "init", "-u", "https://github.com/gumstix/Gumstix-YoctoProject-Repo.git", "-b", WithProperties("%s", "branch")], timeout=1000))
             factory.addStep(ShellCommand(workdir="build/poky", command=["repo", "sync"], timeout=1000))
     #elif defaultenv['ABTARGET'] == "oecore":
     #    factory.addStep(ShellCommand(doStepIf=setOECoreRepo,
@@ -1277,7 +1303,7 @@ yocto_builders.append(b97)
 yocto_sched.append(
 		timed.Periodic(name="nightly-gumstix-2",
                 builderNames=["nightly-gumstix"],
-                periodicBuildTimer=180))
+                periodicBuildTimer=7200))
 
 ################################################################################
 #

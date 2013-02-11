@@ -26,4 +26,4 @@ cd $CURRDIR
 echo "Changed to $CURRDIR"
 
 BDIR="build"
-source ./poky/oe-init-build-env
+TEMPLATECONF=meta-gumstix/conf source ./poky/oe-init-build-env
