@@ -266,14 +266,6 @@ def setAllEnv(factory):
     factory.addStep(SetPropertiesFromEnv(variables=["BUILD_HISTORY_DIR"]))
     factory.addStep(SetPropertiesFromEnv(variables=["BUILD_HISTORY_REPO"]))
     factory.addStep(SetPropertiesFromEnv(variables=["BUILD_HISTORY_COLLECT"]))
-    #factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_POPULATE"]))
-    #factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_DEV_POPULATE"]))
-    #factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_GENERATE_INSTALLER"]))
-    #factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_GENERATE_DEV_INSTALLER"]))
-    #factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_URL"]))
-    #factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_PATH"]))
-    #factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_DEV_URL"]))
-    #factory.addStep(SetPropertiesFromEnv(variables=["ADTREPO_DEV_PATH"]))
 
 def createBBLayersConf(factory, defaultenv, btarget=None, bsplayer=False, provider=None, buildprovider=None):
     factory.addStep(SetPropertiesFromEnv(variables=["SLAVEBASEDIR"]))
@@ -411,6 +403,7 @@ def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
                     command=["yocto-autobuild", image, "-k", "-D"],
                     env=copy.copy(defaultenv),
                     timeout=24400)
+
 def runImageLinaro(factory):
     factory.addStep(ShellCommand, description=["Getting Overo Config file to build hwpack"],
                     command=["git", "clone", "https://github.com/adam-lee/linaro-overo-config.git"],
@@ -932,10 +925,11 @@ b97 = {'name': "nightly-gumstix-master",
       'factory': f97,
       }
 yocto_builders.append(b97)
-yocto_sched.append(
-		timed.Periodic(name="nightly-gumstix-master",
-                builderNames=["nightly-gumstix-master"],
-                periodicBuildTimer=7200))
+#yocto_sched.append(
+#		timed.Periodic(name="nightly-gumstix-master",
+#                builderNames=["nightly-gumstix-master"],
+#                periodicBuildTimer=7200)
+#		)
 
 ################################################################################
 #
@@ -950,6 +944,7 @@ defaultenv['BRANCH'] = "danny"
 defaultenv['ENABLE_SWABBER'] = 'false'
 defaultenv['MIGPL']="False"
 defaultenv['REVISION'] = "danny"
+f98.addStep(shell.SetProperty(command="echo 'dev'", property="branch"))
 makeCheckout(f98)
 runPreamble(f98, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
@@ -962,7 +957,7 @@ f98.addStep(NoOp(name="nightly"))
 b98 = {'name': "nightly-gumstix-dev",
       'slavenames': ["builder1"],
       'builddir': "nightly-gumstix-dev",
-      'factory': f98,
+      'factory': f98
       }
 yocto_builders.append(b98)
 yocto_sched.append(
