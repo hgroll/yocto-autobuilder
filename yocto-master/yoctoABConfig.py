@@ -409,7 +409,7 @@ def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
                     env=copy.copy(defaultenv),
                     timeout=24400)
     factory.addStep(ShellCommand(description="uploading to S3", 
-				 command=["UploadToS3WithMD5.py", "build/tmp/deploy/images/",  WithProperties("%s", "HOSTNAME")], workdir="build",
+				 command=["UploadToS3WithMD5.py", "build/tmp/deploy/images/",  WithProperties("%s", "branch")], workdir="build",
  				 timeout=600))
 
 def runImageLinaro(factory):
@@ -937,6 +937,7 @@ defaultenv['BRANCH'] = "denzil"
 defaultenv['ENABLE_SWABBER'] = 'false'
 defaultenv['MIGPL']="False"
 defaultenv['REVISION'] = "denzil"
+f97.addStep(shell.SetProperty(command="echo 'master'", property="branch"))
 makeCheckout(f97)
 runPreamble(f97, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
@@ -947,7 +948,7 @@ publishArtifacts(f97, "ipk", "build/build/tmp")
 #runArchPostamble(f97, "poky", defaultenv['ABTARGET'])
 f97.addStep(NoOp(name="nightly"))
 b97 = {'name': "nightly-gumstix-master",
-      'slavenames': ["builder1"],
+      'slavenames': ["builder2"],
       'builddir': "nightly-gumstix-master",
       'factory': f97,
       }
