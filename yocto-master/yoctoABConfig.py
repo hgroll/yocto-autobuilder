@@ -456,7 +456,7 @@ def runArchPostamble(factory, distro, target):
                         timeout=2000))
 
 def runPreamble(factory, target):
-    setAllEnv(factory)
+    #setAllEnv(factory)
     factory.addStep(SetPropertiesFromEnv(variables=["SLAVEBASEDIR"]))
     factory.addStep(ShellCommand(doStepIf=getSlaveBaseDir,
                     env=copy.copy(defaultenv),
@@ -475,9 +475,9 @@ def runPreamble(factory, target):
                     description=["Building on", WithProperties("%s", "HOSTNAME"),  WithProperties("%s", "UNAME")],
                     command=["echo", WithProperties("%s", "HOSTNAME"),  WithProperties("%s", "UNAME")]))
     factory.addStep(setDest(workdir=WithProperties("%s", "workdir"), btarget=target, abbase=defaultenv['ABBASE']))
-    factory.addStep(ShellCommand(doStepIf=getRepo,
-                    description="Getting the requested git repo",
-                    command='echo "Getting the requested git repo"'))
+    #factory.addStep(ShellCommand(doStepIf=getRepo,
+    #                description="Getting the requested git repo",
+    #                command='echo "Getting the requested git repo"'))
 
 def getRepo(step):
     gitrepo = step.getProperty("repository")
@@ -500,13 +500,13 @@ def getRepo(step):
             else:
                 #step.setProperty("otherbranch", "master")
                 step.setProperty("otherbranch", "denzil")
-            step.setProperty("short-repo-name", "poky")
+            #step.setProperty("short-repo-name", "poky")
     except:
         step.setProperty("short-repo-name", "poky")
         step.setProperty("otherbranch", branch)
         pass
-    cgitrepo = gitrepo.replace("git://git.yoctoproject.org/",  "http://git.yoctoproject.org/cgit/cgit.cgi/")
-    step.setProperty("cgitrepo", cgitrepo)
+    #cgitrepo = gitrepo.replace("git://git.yoctoproject.org/",  "http://git.yoctoproject.org/cgit/cgit.cgi/")
+    #step.setProperty("cgitrepo", cgitrepo)
     defaultenv['BRANCH']=step.getProperty("otherbranch")
     return True
 
@@ -636,20 +636,20 @@ def runPostamble(factory):
                         command=["mkdir", "-p", "yocto"],
                         env=copy.copy(defaultenv),
                         timeout=14400))
-    if defaultenv['ABTARGET'] != "oecore":
-        factory.addStep(ShellCommand(doStepIf=getRepo, warnOnFailure=True, description="Grabbing git archive",
-                        command=["sh", "-c", WithProperties("wget %s/snapshot/%s-%s.tar.bz2", "cgitrepo", "short-repo-name", "got_revision")],
-                        timeout=600))
-        factory.addStep(ShellCommand(doStepIf=getRepo, warnOnFailure=True, description="Moving tarball",  
-                        command=["sh", "-c", WithProperties("mv %s-%s.tar.bz2 %s", "short-repo-name", "got_revision", "DEST")],
-                        timeout=600))
-    elif defaultenv['ABTARGET'] == "oecore":
-        factory.addStep(ShellCommand(doStepIf=setOECoreRepo, warnOnFailure=True, description="Grabbing git archive",
-                        command=["sh", "-c", WithProperties("wget %s/snapshot/%s-%s.tar.bz2", "cgitrepo", "short-repo-name", "got_revision")],
-                        timeout=600))
-        factory.addStep(ShellCommand(doStepIf=setOECoreRepo, warnOnFailure=True, description="Moving tarball",
-                        command=["sh", "-c", WithProperties("mv %s-%s.tar.bz2 %s", "short-repo-name", "got_revision", "DEST")],
-                        timeout=600))
+    #if defaultenv['ABTARGET'] != "oecore":
+    #    factory.addStep(ShellCommand(doStepIf=getRepo, warnOnFailure=True, description="Grabbing git archive",
+    #                    command=["sh", "-c", WithProperties("wget %s/snapshot/%s-%s.tar.bz2", "cgitrepo", "short-repo-name", "got_revision")],
+    #                    timeout=600))
+    #    factory.addStep(ShellCommand(doStepIf=getRepo, warnOnFailure=True, description="Moving tarball",  
+    #                    command=["sh", "-c", WithProperties("mv %s-%s.tar.bz2 %s", "short-repo-name", "got_revision", "DEST")],
+    #                    timeout=600))
+    #elif defaultenv['ABTARGET'] == "oecore":
+    #    factory.addStep(ShellCommand(doStepIf=setOECoreRepo, warnOnFailure=True, description="Grabbing git archive",
+    #                    command=["sh", "-c", WithProperties("wget %s/snapshot/%s-%s.tar.bz2", "cgitrepo", "short-repo-name", "got_revision")],
+    #                    timeout=600))
+    #    factory.addStep(ShellCommand(doStepIf=setOECoreRepo, warnOnFailure=True, description="Moving tarball",
+    #                    command=["sh", "-c", WithProperties("mv %s-%s.tar.bz2 %s", "short-repo-name", "got_revision", "DEST")],
+    #                    timeout=600))
 
 def buildBSPLayer(factory, distrotype, btarget, provider):
     if distrotype == "poky":
