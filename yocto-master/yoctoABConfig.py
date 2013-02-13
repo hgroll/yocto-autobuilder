@@ -368,6 +368,11 @@ def checkBranchDev(step):
         return False
 
 def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
+    factory.addStep(ShellCommand, description=["cleaning deploy directory"],
+		    command=["sh", "-c", WithProperties("rm -rf tmp/deploy/images/")],
+		    workdir="build/build",
+		    timeout=100)
+
     factory.addStep(ShellCommand, description=["cleaning configuration directory"],
 		    command=["sh", "-c", WithProperties("rm -rf conf")],
 		    workdir="build/build",
@@ -403,6 +408,9 @@ def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
                     command=["yocto-autobuild", image, "-k", "-D"],
                     env=copy.copy(defaultenv),
                     timeout=24400)
+    factory.addStep(ShellCommand(description="uploading to S3", 
+				 command=["UploadToS3WithMD5.py", "build/tmp/deploy/images/",  WithProperties("%s", "HOSTNAME")], workdir="build",
+ 				 timeout=600))
 
 def runImageLinaro(factory):
     factory.addStep(ShellCommand, description=["Getting Overo Config file to build hwpack"],
@@ -592,6 +600,25 @@ def setBSPLayerRepo(step):
     defaultenv['BSP_REV'] = step.getProperty("layer0revision")
     return True
 
+def uploadToS3(step):
+    workdir = step.getProperty("workdir")
+    FILE_README = 'README'
+    out = open(os.path.join(workdir, 'build/build/tmp/deploy/images/', FILE_README), "a+") 
+    DEST = os.path.join(workdir, 'build/build/tmp/deploy/images/', "w+") 
+#    conn = boto.connect_s3()
+#    bucket = conn.get_bucket('yocto')
+#    s =str(today)
+#    k = Key(bucket)
+#    out.write("MD5SUM for build files: \n")
+#    for path, dir, files in os.walk(DEST):
+#        for file in files:
+#            k.key = "Releases" + "/" + s + "/" + os.path.relpath(os.path.join(path,file),DEST)
+#            k.set_contents_from_filename(os.path.join(path,file))
+#            out.write(k.compute_md5(open(os.path.join(path,file)))[0] + " " + str(file) + "\n")
+#
+#    k.key = "Releases" + "/" + s + "/" + FILE_README
+#    k.set_contents_from_filename(os.path.join(DEST,FILE_README))
+#
 def runPostamble(factory):
     factory.addStep(ShellCommand(description=["Setting destination"],
                     command=["sh", "-c", WithProperties('echo "%s" > ./deploy-dir', "DEST")],
@@ -955,15 +982,15 @@ publishArtifacts(f98, "ipk", "build/build/tmp")
 #runArchPostamble(f97, "poky", defaultenv['ABTARGET'])
 f98.addStep(NoOp(name="nightly"))
 b98 = {'name': "nightly-gumstix-dev",
-      'slavenames': ["builder1"],
+      'slavenames': ["builder2"],
       'builddir': "nightly-gumstix-dev",
       'factory': f98
       }
 yocto_builders.append(b98)
-yocto_sched.append(
-		timed.Periodic(name="nightly-gumstix-dev",
-                builderNames=["nightly-gumstix-dev"],
-                periodicBuildTimer=7200))
+#yocto_sched.append(
+#		timed.Periodic(name="nightly-gumstix-dev",
+#                builderNames=["nightly-gumstix-dev"],
+#                periodicBuildTimer=7200))
 
 
 ################################################################################
