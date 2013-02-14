@@ -34,7 +34,7 @@ k = Key(bucket)
 out.write("MD5SUM for build files: \n")
 for path, dir, files in os.walk(SRCDIR):
 	for file in files:
-		k.key = "Releases" + "/" + s + "/" + BRANCH + os.path.relpath(os.path.join(path,file),SRCDIR)
+		k.key = "Releases" + "/" + s + "/" + BRANCH + "/" + os.path.relpath(os.path.join(path,file),SRCDIR)
 		k.set_contents_from_filename(os.path.join(path,file))
 		out.write(k.compute_md5(open(os.path.join(path,file)))[0] + " " + str(file) + "\n")
 
