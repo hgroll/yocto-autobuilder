@@ -277,7 +277,6 @@ def createBBLayersConf(factory, defaultenv, btarget=None, bsplayer=False, provid
     else:
         slavehome = defaultenv['ABTARGET']
     BBLAYER = defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/build/conf/bblayers.conf"
-    setLCONF(factory, defaultenv)
     factory.addStep(ShellCommand(description="Ensuring a bblayers.conf exists",
                     command=["sh", "-c", WithProperties("echo '' > %s/" + slavehome + "/build/build/conf/bblayers.conf", 'SLAVEBASEDIR')],
                     timeout=60))
@@ -400,9 +399,6 @@ def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
     else:
         slavehome = defaultenv['ABTARGET']
     BBLAYER = defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/build/conf/bblayers.conf"
-    factory.addStep(shell.SetProperty( 
-                    command="cat " + BBLAYER + "|grep LCONF |sed 's/LCONF_VERSION = \"//'|sed 's/\"//'",
-                    property="LCONF_VERSION")) 
     defaultenv['MACHINE'] = machine
     factory.addStep(ShellCommand, description=["Building", machine, image],
                     command=["yocto-autobuild", image, "-k", "-D"],
@@ -456,7 +452,6 @@ def runArchPostamble(factory, distro, target):
                         timeout=2000))
 
 def runPreamble(factory, target):
-    #setAllEnv(factory)
     factory.addStep(SetPropertiesFromEnv(variables=["SLAVEBASEDIR"]))
     factory.addStep(ShellCommand(doStepIf=getSlaveBaseDir,
                     env=copy.copy(defaultenv),
@@ -475,9 +470,6 @@ def runPreamble(factory, target):
                     description=["Building on", WithProperties("%s", "HOSTNAME"),  WithProperties("%s", "UNAME")],
                     command=["echo", WithProperties("%s", "HOSTNAME"),  WithProperties("%s", "UNAME")]))
     factory.addStep(setDest(workdir=WithProperties("%s", "workdir"), btarget=target, abbase=defaultenv['ABBASE']))
-    #factory.addStep(ShellCommand(doStepIf=getRepo,
-    #                description="Getting the requested git repo",
-    #                command='echo "Getting the requested git repo"'))
 
 def getRepo(step):
     gitrepo = step.getProperty("repository")
@@ -486,7 +478,6 @@ def getRepo(step):
         if gitrepo == "git://git.yoctoproject.org/poky-contrib":
             for release in releases:
                 if release in branch:
-                    #step.setProperty("otherbranch", release)
                     step.setProperty("otherbranch", "denzil")
                     break
                 else:
@@ -945,7 +936,6 @@ runImage(f97, 'overo', 'gumstix-console-image', defaultenv['DISTRO'], False, "gu
 runImage(f97, 'overo', 'gumstix-xfce-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
 publishArtifacts(f97, "toolchain","build/build/tmp")
 publishArtifacts(f97, "ipk", "build/build/tmp")
-#runArchPostamble(f97, "poky", defaultenv['ABTARGET'])
 f97.addStep(NoOp(name="nightly"))
 b97 = {'name': "nightly-gumstix-master",
       'slavenames': ["builder2"],
@@ -980,7 +970,6 @@ runImage(f98, 'overo', 'gumstix-console-image', defaultenv['DISTRO'], False, "gu
 runImage(f98, 'overo', 'gumstix-xfce-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
 publishArtifacts(f98, "toolchain","build/build/tmp")
 publishArtifacts(f98, "ipk", "build/build/tmp")
-#runArchPostamble(f97, "poky", defaultenv['ABTARGET'])
 f98.addStep(NoOp(name="nightly"))
 b98 = {'name': "nightly-gumstix-dev",
       'slavenames': ["builder2"],
