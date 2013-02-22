@@ -938,7 +938,7 @@ publishArtifacts(f97, "toolchain","build/build/tmp")
 publishArtifacts(f97, "ipk", "build/build/tmp")
 f97.addStep(NoOp(name="nightly"))
 b97 = {'name': "nightly-gumstix-master",
-      'slavenames': ["builder2"],
+      'slavenames': ["builder1"],
       'builddir': "nightly-gumstix-master",
       'factory': f97,
       }
