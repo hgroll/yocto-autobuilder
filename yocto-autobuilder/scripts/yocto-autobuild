@@ -42,7 +42,7 @@ source ./poky/oe-init-build-env
 #	echo 'GIT_PROXY_PORT = "proxyportnumber"' >> "$SITECONF"
 #	echo 'GIT_PROXY_COMMAND = "/usr/local/bin/git-proxy"' >> "$SITECONF"
 #fi
-
+bitbake -c cleanall u-boot
 bitbake $@
 
 retval=$?

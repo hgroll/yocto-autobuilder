@@ -366,7 +366,7 @@ def checkBranchDev(step):
     else:
         return False
 
-def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
+def runImage(factory, machine, distro, bsplayer, provider, buildhistory):
     factory.addStep(ShellCommand, description=["cleaning deploy directory"],
 		    command=["sh", "-c", WithProperties("rm -rf tmp/deploy/images/")],
 		    workdir="build/build",
@@ -400,8 +400,12 @@ def runImage(factory, machine, image, distro, bsplayer, provider, buildhistory):
         slavehome = defaultenv['ABTARGET']
     BBLAYER = defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/build/conf/bblayers.conf"
     defaultenv['MACHINE'] = machine
-    factory.addStep(ShellCommand, description=["Building", machine, image],
-                    command=["yocto-autobuild", image, "-k", "-D"],
+    factory.addStep(ShellCommand, description=["Building", machine, "gumstix-console-image"],
+                    command=["yocto-autobuild", "gumstix-console-image", "-k", "-D"],
+                    env=copy.copy(defaultenv),
+                    timeout=24400)
+    factory.addStep(ShellCommand, description=["Building", machine, "gumstix-xfce-image"],
+                    command=["yocto-autobuild", "gumstix-xfce-image", "-k", "-D"],
                     env=copy.copy(defaultenv),
                     timeout=24400)
     factory.addStep(ShellCommand(description="uploading to S3", 
@@ -932,8 +936,7 @@ f97.addStep(shell.SetProperty(command="echo 'master'", property="branch"))
 makeCheckout(f97)
 runPreamble(f97, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
-runImage(f97, 'overo', 'gumstix-console-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
-runImage(f97, 'overo', 'gumstix-xfce-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
+runImage(f97, 'overo', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
 publishArtifacts(f97, "toolchain","build/build/tmp")
 publishArtifacts(f97, "ipk", "build/build/tmp")
 f97.addStep(NoOp(name="nightly"))
@@ -966,8 +969,7 @@ f98.addStep(shell.SetProperty(command="echo 'dev'", property="branch"))
 makeCheckout(f98)
 runPreamble(f98, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
-runImage(f98, 'overo', 'gumstix-console-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
-runImage(f98, 'overo', 'gumstix-xfce-image', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
+runImage(f98, 'overo', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
 publishArtifacts(f98, "toolchain","build/build/tmp")
 publishArtifacts(f98, "ipk", "build/build/tmp")
 f98.addStep(NoOp(name="nightly"))

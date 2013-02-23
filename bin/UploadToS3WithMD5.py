@@ -7,8 +7,6 @@ from boto.s3.key import Key
 import boto, datetime, os, sys, subprocess, shutil
 from sys import argv
 
-FILE_README = 'README'
-
 try:
 	argv[1]
 except NameError:
@@ -21,6 +19,8 @@ SRCDIR = argv[1]
 BRANCH = argv[2]
 print argv[1]
 print argv[2]
+
+FILE_README = 'README'
 
 out = open(os.path.join(SRCDIR, FILE_README), "a+")
 
