@@ -533,7 +533,7 @@ def getTag(step):
     return True
 
 def makeCheckout(factory):
-	if defaultenv['ABTARGET'] == "nightly-gumstix":
+	if defaultenv['ABTARGET'] == "overo":
             factory.addStep(ShellCommand(workdir="./", command=["curl", "-o", "repo", "https://dl-ssl.google.com/dl/googlesource/git-repo/repo"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["chmod", "a+x", "repo"], timeout=1000))
             factory.addStep(ShellCommand(workdir="./", command=["sudo", "mv", "repo", "/usr/local/bin"], timeout=1000))
@@ -926,7 +926,7 @@ def publishArtifacts(factory, artifact, tmpdir):
 ################################################################################
 f97 = factory.BuildFactory()
 defaultenv['DISTRO'] = 'poky'
-defaultenv['ABTARGET'] = 'nightly-gumstix'
+defaultenv['ABTARGET'] = 'overo'
 defaultenv['MACHINE'] = "overo"
 defaultenv['BRANCH'] = "denzil"
 defaultenv['ENABLE_SWABBER'] = 'false'
@@ -940,15 +940,15 @@ runImage(f97, 'overo', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD
 publishArtifacts(f97, "toolchain","build/build/tmp")
 publishArtifacts(f97, "ipk", "build/build/tmp")
 f97.addStep(NoOp(name="nightly"))
-b97 = {'name': "nightly-gumstix-master",
+b97 = {'name': "overo-master",
       'slavenames': ["builder1"],
       'builddir': "nightly-gumstix-master",
       'factory': f97,
       }
 yocto_builders.append(b97)
 #yocto_sched.append(
-#		timed.Periodic(name="nightly-gumstix-master",
-#                builderNames=["nightly-gumstix-master"],
+#		timed.Periodic(name="overo-master",
+#                builderNames=["nightly-overo-master"],
 #                periodicBuildTimer=7200)
 #		)
 
@@ -959,7 +959,7 @@ yocto_builders.append(b97)
 ################################################################################
 f98 = factory.BuildFactory()
 defaultenv['DISTRO'] = 'poky'
-defaultenv['ABTARGET'] = 'nightly-gumstix'
+defaultenv['ABTARGET'] = 'overo'
 defaultenv['MACHINE'] = "overo"
 defaultenv['BRANCH'] = "danny"
 defaultenv['ENABLE_SWABBER'] = 'false'
@@ -973,15 +973,47 @@ runImage(f98, 'overo', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD
 publishArtifacts(f98, "toolchain","build/build/tmp")
 publishArtifacts(f98, "ipk", "build/build/tmp")
 f98.addStep(NoOp(name="nightly"))
-b98 = {'name': "nightly-gumstix-dev",
+b98 = {'name': "overo-dev",
       'slavenames': ["builder2"],
       'builddir': "nightly-gumstix-dev",
       'factory': f98
       }
 yocto_builders.append(b98)
 #yocto_sched.append(
-#		timed.Periodic(name="nightly-gumstix-dev",
-#                builderNames=["nightly-gumstix-dev"],
+#		timed.Periodic(name="overo-dev",
+#                builderNames=["nightly-overo-dev"],
+#                periodicBuildTimer=7200))
+
+################################################################################
+#
+# Nightly Gumstix Duovero Master 
+#
+################################################################################
+f99 = factory.BuildFactory()
+defaultenv['DISTRO'] = 'poky'
+defaultenv['ABTARGET'] = 'duovero'
+defaultenv['MACHINE'] = "duovero"
+defaultenv['BRANCH'] = "danny"
+defaultenv['ENABLE_SWABBER'] = 'false'
+defaultenv['MIGPL']="False"
+defaultenv['REVISION'] = "danny"
+f98.addStep(shell.SetProperty(command="echo 'master'", property="branch"))
+makeCheckout(f99)
+runPreamble(f99, defaultenv['ABTARGET'])
+defaultenv['SDKMACHINE'] = 'i686'
+runImage(f99, 'duovero', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
+publishArtifacts(f99, "toolchain","build/build/tmp")
+publishArtifacts(f99, "ipk", "build/build/tmp")
+f99.addStep(NoOp(name="nightly"))
+b99 = {'name': "duovero-master",
+      'slavenames': ["builder2"],
+      'builddir': "nightly-duovero-master",
+      'factory': f99
+      }
+yocto_builders.append(b99)
+#yocto_sched.append(
+#		timed.Periodic(name="nightly-duovero-master",
+#                builderNames=["nightly-gumstix-master"],
 #                periodicBuildTimer=7200))
 
 
