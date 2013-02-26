@@ -539,6 +539,9 @@ def makeCheckout(factory):
             factory.addStep(ShellCommand(workdir="./", command=["sudo", "mv", "repo", "/usr/local/bin"], timeout=1000))
 	    factory.addStep(ShellCommand(workdir="build", command=["repo", "init", "-u", "https://github.com/gumstix/Gumstix-YoctoProject-Repo.git", "-b", WithProperties("%s", "branch")], timeout=1000))
             factory.addStep(ShellCommand(workdir="build/poky", command=["repo", "sync"], timeout=1000))
+            factory.addStep(ShellCommand(workdir="build", command=["repo", "manifest", "-r", "-o", "manifest.xml"], timeout=1000))
+            factory.addStep(ShellCommand(workdir="build", command=["UploadToS3.py", "manifest.xml", WithProperties("%s", "branch")], timeout=1000))
+            factory.addStep(ShellCommand(workdir="build", command=["rm", "manifest.xml"], timeout=1000))
 def makeTarball(factory):
     factory.addStep(ShellCommand, description="Generating release tarball", 
                     command=["yocto-autobuild-generate-sources-tarball", "nightly", "1.1pre", 
