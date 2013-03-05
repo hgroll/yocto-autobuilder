@@ -17,8 +17,10 @@ else:
 
 FILE = argv[1] 
 BRANCH = argv[2]
+MACHINE = argv[3]
 print argv[1]
 print argv[2]
+print argv[3]
 
 conn = boto.connect_s3()
 
@@ -27,6 +29,6 @@ bucket = conn.get_bucket('yocto')
 today = datetime.date.today()
 s = str(today)
 k = Key(bucket)
-k.key = "Releases" + "/" + s + "/" + BRANCH + "/" + FILE
+k.key = "Releases" + "/" + s + "/" + BRANCH + "/" + MACHINE + "/" +  FILE
 k.set_contents_from_filename(FILE)
 
