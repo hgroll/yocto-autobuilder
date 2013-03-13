@@ -410,6 +410,9 @@ def runImage(factory, machine, distro, bsplayer, provider, buildhistory):
                     timeout=24400)
     factory.addStep(ShellCommand(description="uploading to S3", 
 				 command=["UploadToS3WithMD5.py", "build/tmp/deploy/images/",  WithProperties("%s", "branch"), defaultenv['MACHINE']], workdir="build",
+				 timeout=600))
+    factory.addStep(ShellCommand(description="Shutting Down", 
+				 command=["sudo", "halt"],
  				 timeout=600))
 
 def runImageLinaro(factory):
@@ -531,6 +534,34 @@ def getTag(step):
         step.setProperty("pokytag", "HEAD")
         pass
     return True
+
+#def spawnEC2(machine)
+#	conn = boto.connect_ec2()
+#	regions = boto.ec2.regions() 		
+#
+#	conn_us_west = regions[4].connect()
+#	conn_us_west.request_spot_instances(0.6, 'ami-726df842', key_name='adam-pine', security_groups=['buildbot'],instance_type='c1.xlarge', availability_zone_group='us-west-2c')
+#
+#	while(state == "open"):
+#    		if conn_us_west.get_all_spot_instance_requests()[-1].state == "open":
+#    			print "Spot instance request still in the open state"
+#        		time.sleep(20) 
+#    		else:
+#    			print "Spot instance now active"
+#			inst_id = conn_us_west.get_all_spot_instance_requests()[-1].instance_id
+#			reservations = conn_us_west.get_all_instances(instance_ids=[inst_id])
+#			instance = reservations[0].instances[0]
+#        		state = "active"
+#	while(instance.state != "running"):
+#   		print "Instance is initializing... "
+#   		time.sleep(20)
+#   		instance.update()
+#
+#	instance.add_tag("Application", "Buildbot")
+#	instance.add_tag("Name", machine)
+#	time.sleep(180)
+#	if conn_us_west.attach_volume('vol-11e1e728', inst_id, '/dev/sdh') == True:
+#		return True
 
 def makeCheckout(factory):
 	if defaultenv['ABTARGET'] == "overo":
@@ -949,10 +980,12 @@ b97 = {'name': "overo-master",
       'factory': f97,
       }
 yocto_builders.append(b97)
-#yocto_sched.append(
-#		timed.Periodic(name="overo-master",
-#                builderNames=["overo-master"],
-#                periodicBuildTimer=240))
+yocto_sched.append(
+		timed.Nightly(name="nightly-overo-master",
+                builderNames=["overo-master"],
+		branch = 'master',
+                hour=23, minute=00))
+
 
 ################################################################################
 #
@@ -1013,10 +1046,12 @@ b99 = {'name': "duovero-master",
       'factory': f99
       }
 yocto_builders.append(b99)
-#yocto_sched.append(
-#		timed.Periodic(name="nightly-duovero-master",
-#                builderNames=["nightly-gumstix-master"],
-#                periodicBuildTimer=7200))
+yocto_sched.append(
+		timed.Nightly(name="nightly-duovero-master",
+                builderNames=["duovero-master"],
+		branch = 'dev',
+                hour=23, minute=00))
+
 
 ################################################################################
 #
@@ -1045,10 +1080,11 @@ b100 = {'name': "pepper-master",
       'factory': f100
       }
 yocto_builders.append(b100)
-#yocto_sched.append(
-#		timed.Periodic(name="nightly-duovero-master",
-#                builderNames=["nightly-gumstix-master"],
-#                periodicBuildTimer=7200))
+yocto_sched.append(
+		timed.Nightly(name="nightly-pepper-master",
+                builderNames=["pepper-master"],
+		branch = 'dev',
+                hour=23, minute=00))
 
 
 
