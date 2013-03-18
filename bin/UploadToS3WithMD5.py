@@ -17,8 +17,10 @@ else:
 
 SRCDIR = argv[1] 
 BRANCH = argv[2]
+MACHINE = argv[3]
 print argv[1]
 print argv[2]
+print argv[3]
 
 FILE_README = 'README'
 
@@ -34,12 +36,12 @@ k = Key(bucket)
 out.write("MD5SUM for build files: \n")
 for path, dir, files in os.walk(SRCDIR):
 	for file in files:
-		k.key = "Releases" + "/" + s + "/" + BRANCH + "/" + os.path.relpath(os.path.join(path,file),SRCDIR)
+		k.key = "Releases" + "/" + s + "/" + BRANCH + "/" + MACHINE + "/" + os.path.relpath(os.path.join(path,file),SRCDIR)
 		k.set_contents_from_filename(os.path.join(path,file))
 		out.write(k.compute_md5(open(os.path.join(path,file)))[0] + " " + str(file) + "\n")
 
 out.write("\nPlease refer to https://github.org for build procedure\n")
 out.close()
 
-k.key = "Releases" + "/" + s + "/" +  FILE_README
+k.key = "Releases" + "/" + s + "/" BRANCH + "/" + MACHINE + "/" +  FILE_README
 k.set_contents_from_filename(os.path.join(SRCDIR,FILE_README))
