@@ -972,10 +972,12 @@ b98 = {'name': "overo-dev",
       'factory': f98
       }
 yocto_builders.append(b98)
-#yocto_sched.append(
-#		timed.Periodic(name="overo-dev",
-#                builderNames=["overo-dev"],
-#                periodicBuildTimer=240))
+yocto_sched.append(
+		timed.Nightly(name="nightly-overo-dev",
+                builderNames=["overo-dev"],
+		branch = 'dev',
+                hour=23, minute=00))
+
 
 ################################################################################
 #
