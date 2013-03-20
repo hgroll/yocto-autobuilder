@@ -44,6 +44,9 @@ from buildbot.steps.shell import ShellCommand
 from buildbot.steps.source import Git
 from buildbot.process.properties import Property
 from buildbot.steps.slave import SetPropertiesFromEnv
+from buildbot.steps.slave import RemoveDirectory
+from buildbot.steps.source import Repo
+from buildbot.steps.source import Git 
 
 yocto_projname = "Gumstix CI"
 yocto_projurl = "http://buildbot.gumstix.org/"
@@ -267,59 +270,6 @@ def setAllEnv(factory):
     factory.addStep(SetPropertiesFromEnv(variables=["BUILD_HISTORY_REPO"]))
     factory.addStep(SetPropertiesFromEnv(variables=["BUILD_HISTORY_COLLECT"]))
 
-def createBBLayersConf(factory, defaultenv, btarget=None, bsplayer=False, provider=None, buildprovider=None):
-    factory.addStep(SetPropertiesFromEnv(variables=["SLAVEBASEDIR"]))
-    factory.addStep(ShellCommand(doStepIf=getSlaveBaseDir,
-                    env=copy.copy(defaultenv),
-                    command='echo "Getting the slave basedir"'))
-    if defaultenv['MIGPL']=="True":
-        slavehome = "meta-intel-gpl"
-    else:
-        slavehome = defaultenv['ABTARGET']
-    BBLAYER = defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/build/conf/bblayers.conf"
-    factory.addStep(ShellCommand(description="Ensuring a bblayers.conf exists",
-                    command=["sh", "-c", WithProperties("echo '' > %s/" + slavehome + "/build/build/conf/bblayers.conf", 'SLAVEBASEDIR')],
-                    timeout=60))
-    factory.addStep(ShellCommand(warnOnFailure=True, description="Removing old bblayers.conf",
-                    command=["sh", "-c", WithProperties("rm %s/" + slavehome + "/build/build/conf/bblayers.conf", 'SLAVEBASEDIR')],
-                    timeout=60))
-    factory.addStep(ShellCommand(description="Adding LCONF to bblayers.conf",
-                    command=["sh", "-c", WithProperties("echo 'LCONF_VERSION = \"%s\" \n' > %s/" + slavehome + "/build/build/conf/bblayers.conf",    'LCONF_VERSION', 'SLAVEBASEDIR')],
-                    timeout=60))
-    fout = ""
-    fout = fout + 'BBPATH = "${TOPDIR}" \n'
-    fout = fout + 'BBFILES ?="" \n'
-    fout = fout + 'BBLAYERS += " \ \n'
-    if buildprovider=="yocto":
-        fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta \ \n"
-        fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-yocto \ \n"
-        if provider=="gumstix":
-            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-openembedded/meta-gnome \ \n"
-            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-openembedded/meta-oe \ \n"
-            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-openembedded/meta-xfce \ \n"
-            fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-gumstix \ \n"
-    elif buildprovider=="oe":
-        fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta \ \n"
-    if bsplayer==True and provider=="intel":
-        if defaultenv['BRANCH'] != "edison":
-             fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + '/build/yocto/meta-intel' + ' \ \n'
-        fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + '/build/yocto/meta-intel/meta-' + btarget.replace("-noemgd", "") + ' \ \n'
-        fout = fout + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + '/build/yocto/meta-intel/meta-tlk \ \n'
-    elif bsplayer==True and provider=="fsl" and btarget == "p1022ds":
-        fout = fout + defaultenv['SLAVEBASEDIR']  + "/" + slavehome + '/build/yocto/meta-fsl-ppc \ \n'
-    fout = fout + ' " \n'
-    factory.addStep(ShellCommand(description="Creating bblayers.conf",
-                    command="echo '" +  fout + "'>>" + BBLAYER,
-                    timeout=60))
-    if buildprovider=="yocto" and provider!="gumstix":
-        factory.addStep(ShellCommand(doStepIf=checkYoctoBSPLayer, description="Adding meta-yocto-bsp layer to bblayers.conf",
-                        command="echo 'BBLAYERS += \"" + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/poky/meta-yocto-bsp\"'>>" + BBLAYER,
-                        timeout=60))
-    if defaultenv['ABTARGET'] == 'nightly-x32':
-        factory.addStep(ShellCommand(doStepIf=lambda(step): step.build.getProperties().has_key("PRE13"), description="Adding meta-x32 layer to bblayers.conf",
-                        command="echo 'BBLAYERS += \"" + defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/meta-x32\"'>>" + BBLAYER,
-                        timeout=60))
-
 def doMasterTest(step):
     branch = step.getProperty("branch")
     if branch == "master":
@@ -367,21 +317,24 @@ def checkBranchDev(step):
         return False
 
 def runImage(factory, machine, distro, bsplayer, provider, buildhistory):
-    factory.addStep(ShellCommand, description=["cleaning deploy directory"],
-		    command=["sh", "-c", WithProperties("rm -rf tmp/deploy/images/")],
-		    workdir="build/build",
-		    timeout=100)
-
-    factory.addStep(ShellCommand, description=["cleaning configuration directory"],
-		    command=["sh", "-c", WithProperties("rm -rf conf")],
-		    workdir="build/build",
-		    timeout=10)
-    factory.addStep(ShellCommand(doStepIf=checkBranchMaster,  description=["setting up build"],
+#    factory.addStep(ShellCommand, description=["cleaning deploy directory"],
+#		    command=["sh", "-c", WithProperties("rm -rf tmp/deploy/images/")],
+#		    workdir="build/build",
+#		    timeout=100)
+    factory.addStep(RemoveDirectory(warnOnFailure=True, dir="build/build/tmp/deploy/images"))
+#    factory.addStep(shutil.rmtree('tmp/deploy/images'), description=["cleaning deploy directory"], workdir="build/build", 
+#                    timeout=100)
+    factory.addStep(RemoveDirectory(warnOnFailure=True, dir="build/build/conf"))
+#    factory.addStep(ShellCommand, description=["cleaning configuration directory"],
+#		    command=["sh", "-c", WithProperties("rm -rf conf")],
+#		    workdir="build/build",
+#		    timeout=10)
+    factory.addStep(ShellCommand(haltOnFailure=True, doStepIf=checkBranchMaster,  description=["setting up build"],
                     command=["yocto-autobuild-preamble"],
                     workdir="build",
                     env=copy.copy(defaultenv),
                     timeout=24400))
-    factory.addStep(ShellCommand(doStepIf=checkBranchDev,  description=["setting up build"],
+    factory.addStep(ShellCommand(haltOnFailure=True, doStepIf=checkBranchDev,  description=["setting up build"],
                     command=["yocto-autobuild-preamble-danny"],
                     workdir="build", 
                     env=copy.copy(defaultenv),
@@ -394,22 +347,19 @@ def runImage(factory, machine, distro, bsplayer, provider, buildhistory):
     factory.addStep(ShellCommand(doStepIf=getSlaveBaseDir,
                     env=copy.copy(defaultenv),
                     command='echo "Getting the slave basedir"'))
-    if defaultenv['MIGPL']=="True":
-        slavehome = "meta-intel-gpl"
-    else:
-        slavehome = defaultenv['ABTARGET']
-    BBLAYER = defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/build/conf/bblayers.conf"
+    slavehome = defaultenv['ABTARGET']
+    #BBLAYER = defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/build/conf/bblayers.conf"
     defaultenv['MACHINE'] = machine
-    factory.addStep(ShellCommand, description=["Building", machine, "gumstix-console-image"],
+    factory.addStep(ShellCommand, haltOnFailure=True, description=["Building", machine, "gumstix-console-image"],
                     command=["yocto-autobuild", "gumstix-console-image", "-k", "-D"],
                     env=copy.copy(defaultenv),
                     timeout=24400)
-    factory.addStep(ShellCommand, description=["Building", machine, "gumstix-xfce-image"],
+    factory.addStep(ShellCommand, haltOnFailure=True, description=["Building", machine, "gumstix-xfce-image"],
                     command=["yocto-autobuild", "gumstix-xfce-image", "-k", "-D"],
                     env=copy.copy(defaultenv),
                     timeout=24400)
-    factory.addStep(ShellCommand(description="uploading to S3", 
-				 command=["UploadToS3WithMD5.py", "build/tmp/deploy/images/",  WithProperties("%s", "branch"), defaultenv['MACHINE']], workdir="build",
+    factory.addStep(ShellCommand(warnOnFailure=True, description="uploading to S3", 
+				 command=["UploadToS3WithMD5", "build/tmp/deploy/images/",  WithProperties("%s", "branch"), defaultenv['MACHINE']], workdir="build",
 				 timeout=600))
     factory.addStep(ShellCommand(description="Shutting Down", 
 				 command=["sudo", "halt"],
@@ -571,7 +521,7 @@ def makeCheckout(factory):
 	    factory.addStep(ShellCommand(workdir="build", command=["repo", "init", "-u", "https://github.com/gumstix/Gumstix-YoctoProject-Repo.git", "-b", WithProperties("%s", "branch")], timeout=1000))
             factory.addStep(ShellCommand(workdir="build/poky", command=["repo", "sync"], timeout=1000))
             factory.addStep(ShellCommand(workdir="build", command=["repo", "manifest", "-r", "-o", "manifest.xml"], timeout=1000))
-            factory.addStep(ShellCommand(workdir="build", command=["UploadToS3.py", "manifest.xml", WithProperties("%s", "branch"), defaultenv['MACHINE']], timeout=1000))
+            factory.addStep(ShellCommand(workdir="build", command=["UploadToS3", "manifest.xml", WithProperties("%s", "branch"), defaultenv['MACHINE']], timeout=1000))
             factory.addStep(ShellCommand(workdir="build", command=["rm", "manifest.xml"], timeout=1000))
 def makeTarball(factory):
     factory.addStep(ShellCommand, description="Generating release tarball", 
@@ -579,6 +529,12 @@ def makeTarball(factory):
                     WithProperties("%s", "branch")], timeout=120)
     publishArtifacts(factory, "tarball", "build/build/tmp")
 
+def makeRepoCheckout(factory):
+	factory.addStep(Repo(manifest_url="https://github.com/gumstix/Gumstix-YoctoProject-Repo.git", manifest_branch=defaultenv['BRANCH']))
+
+def makeScriptsCheckout(factory):
+	factory.addStep(RemoveDirectory(warnOnFailure=True, dir="/media/yocto-autobuilder-scripts"))
+	factory.addStep(Git(repourl='git@github.com:adam-lee/yocto-autobuilder-scripts.git', workdir='/media/yocto-autobuilder-scripts'))	
 
 def makeLayerTarball(factory):
     factory.addStep(ShellCommand, description="Generating release tarball",
@@ -967,7 +923,9 @@ defaultenv['ENABLE_SWABBER'] = 'false'
 defaultenv['MIGPL']="False"
 defaultenv['REVISION'] = "denzil"
 f97.addStep(shell.SetProperty(command="echo 'master'", property="branch"))
-makeCheckout(f97)
+#makeCheckout(f97)
+makeScriptsCheckout(f97)
+makeRepoCheckout(f97)
 runPreamble(f97, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
 runImage(f97, 'overo', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
