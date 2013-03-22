@@ -50,7 +50,7 @@ export ADTREPO_PATH="/srv/www/vhosts/adtrepo.yoctoproject.org/"
 export ADTREPO_DEV_URL="http://adtrepo-dev.yoctoproject.org/"
 export ADTREPO_DEV_PATH="/srv/www/vhosts/adtrepo-dev/"
 export PYTHONPATH=`pwd`/lib/python2.6/site-packages/:$PYTHONPATH
-export PATH=`pwd`/bin:`pwd`/yocto-autobuilder/scripts:$PATH
+export PATH=`pwd`/bin:/media/yocto-autobuilder-scripts:$PATH
 config_check=`cat ${PWD}/yocto-master/master.cfg|grep "'<USER>', '<PASS>'"`
 
 
