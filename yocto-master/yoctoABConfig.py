@@ -534,7 +534,7 @@ def makeRepoCheckout(factory):
 
 def makeScriptsCheckout(factory):
 	factory.addStep(RemoveDirectory(warnOnFailure=True, dir="/media/yocto-autobuilder-scripts"))
-	factory.addStep(Git(repourl='git@github.com:adam-lee/yocto-autobuilder-scripts.git', workdir='/media/yocto-autobuilder-scripts'))	
+	factory.addStep(Git(repourl='https://github.com/adam-lee/yocto-autobuilder-scripts.git', workdir='/media/yocto-autobuilder-scripts'))	
 
 def makeLayerTarball(factory):
     factory.addStep(ShellCommand, description="Generating release tarball",
