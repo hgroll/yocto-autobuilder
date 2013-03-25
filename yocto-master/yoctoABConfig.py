@@ -359,7 +359,7 @@ def runImage(factory, machine, distro, bsplayer, provider, buildhistory):
                     env=copy.copy(defaultenv),
                     timeout=24400)
     factory.addStep(ShellCommand(warnOnFailure=True, description="uploading to S3", 
-				 command=["UploadToS3WithMD5", "build/tmp/deploy/images/",  WithProperties("%s", "branch"), defaultenv['MACHINE']], workdir="build",
+				 command=["UploadToS3WithMD5", "build/tmp/deploy/images/",  WithProperties("%s", "branch"), defaultenv['MACHINE']], workdir="/media",
 				 timeout=600))
     factory.addStep(ShellCommand(description="Shutting Down", 
 				 command=["sudo", "halt"],
@@ -428,91 +428,6 @@ def runPreamble(factory, target):
                     command=["echo", WithProperties("%s", "HOSTNAME"),  WithProperties("%s", "UNAME")]))
     factory.addStep(setDest(workdir=WithProperties("%s", "workdir"), btarget=target, abbase=defaultenv['ABBASE']))
 
-def getRepo(step):
-    gitrepo = step.getProperty("repository")
-    try:
-        branch = step.getProperty("branch")
-        if gitrepo == "git://git.yoctoproject.org/poky-contrib":
-            for release in releases:
-                if release in branch:
-                    step.setProperty("otherbranch", "denzil")
-                    break
-                else:
-                    step.setProperty("otherbranch", "denzil")
-#                    step.setProperty("otherbranch", "master")
-            step.setProperty("short-repo-name", "poky-contrib")
-        elif gittype == "git://git.yoctoproject.org/poky":
-            if branch != "master":
-                step.setProperty("otherbranch", "denzil")
-                #step.setProperty("otherbranch", branch)
-            else:
-                #step.setProperty("otherbranch", "master")
-                step.setProperty("otherbranch", "denzil")
-            #step.setProperty("short-repo-name", "poky")
-    except:
-        step.setProperty("short-repo-name", "poky")
-        step.setProperty("otherbranch", branch)
-        pass
-    #cgitrepo = gitrepo.replace("git://git.yoctoproject.org/",  "http://git.yoctoproject.org/cgit/cgit.cgi/")
-    #step.setProperty("cgitrepo", cgitrepo)
-    defaultenv['BRANCH']=step.getProperty("otherbranch")
-    return True
-
-def setOECoreRepo(step):
-    step.setProperty("repository", "git://git.openembedded.org/openembedded-core")
-    step.setProperty("repourl", "git://git.openembedded.org/openembedded-core")
-    step.setProperty("branch", "master")
-    step.setProperty("short-repo-name", "openembedded-core")
-    #step.setProperty("otherbranch", "master")
-    step.setProperty("otherbranch", "denzil")
-    cgitrepo = ("http://git.openembedded.org/cgit/cgit.cgi/")
-    step.setProperty("cgitrepo", cgitrepo)
-    defaultenv['BRANCH']=step.getProperty("otherbranch")
-    return True
-
-def checkMultiOSSState(step):
-    branch = step.getProperty("otherbranch")
-    if branch == 'edison' or branch == 'denzil':
-        step.setProperty("PRE13", "True")
-        return False
-    return True
- 
-def getTag(step):
-    try:
-        tag = step.getProperty("pokytag")
-    except:
-        step.setProperty("pokytag", "HEAD")
-        pass
-    return True
-
-#def spawnEC2(machine)
-#	conn = boto.connect_ec2()
-#	regions = boto.ec2.regions() 		
-#
-#	conn_us_west = regions[4].connect()
-#	conn_us_west.request_spot_instances(0.6, 'ami-726df842', key_name='adam-pine', security_groups=['buildbot'],instance_type='c1.xlarge', availability_zone_group='us-west-2c')
-#
-#	while(state == "open"):
-#    		if conn_us_west.get_all_spot_instance_requests()[-1].state == "open":
-#    			print "Spot instance request still in the open state"
-#        		time.sleep(20) 
-#    		else:
-#    			print "Spot instance now active"
-#			inst_id = conn_us_west.get_all_spot_instance_requests()[-1].instance_id
-#			reservations = conn_us_west.get_all_instances(instance_ids=[inst_id])
-#			instance = reservations[0].instances[0]
-#        		state = "active"
-#	while(instance.state != "running"):
-#   		print "Instance is initializing... "
-#   		time.sleep(20)
-#   		instance.update()
-#
-#	instance.add_tag("Application", "Buildbot")
-#	instance.add_tag("Name", machine)
-#	time.sleep(180)
-#	if conn_us_west.attach_volume('vol-11e1e728', inst_id, '/dev/sdh') == True:
-#		return True
-
 def makeCheckout(factory):
 	if defaultenv['ABTARGET'] == "overo":
             factory.addStep(ShellCommand(workdir="./", command=["curl", "-o", "repo", "https://dl-ssl.google.com/dl/googlesource/git-repo/repo"], timeout=1000))
@@ -541,14 +456,6 @@ def makeLayerTarball(factory):
                     command=["yocto-autobuild-generate-sources-tarball", "nightly", "1.1pre",
                     WithProperties("%s", "layer0branch")], timeout=120)
     publishArtifacts(factory, "layer-tarball", "build/build/tmp")
-
-def doEdisonBSPTest(step):
-    branch = step.getProperty("otherbranch")
-    if "edison" in branch:
-        return True
-    else:
-        return False
-
 
 def doEMGDTest(step):
     buildername = step.getProperty("buildername")
@@ -585,25 +492,6 @@ def setBSPLayerRepo(step):
     defaultenv['BSP_REV'] = step.getProperty("layer0revision")
     return True
 
-def uploadToS3(step):
-    workdir = step.getProperty("workdir")
-    FILE_README = 'README'
-    out = open(os.path.join(workdir, 'build/build/tmp/deploy/images/', FILE_README), "a+") 
-    DEST = os.path.join(workdir, 'build/build/tmp/deploy/images/', "w+") 
-#    conn = boto.connect_s3()
-#    bucket = conn.get_bucket('yocto')
-#    s =str(today)
-#    k = Key(bucket)
-#    out.write("MD5SUM for build files: \n")
-#    for path, dir, files in os.walk(DEST):
-#        for file in files:
-#            k.key = "Releases" + "/" + s + "/" + os.path.relpath(os.path.join(path,file),DEST)
-#            k.set_contents_from_filename(os.path.join(path,file))
-#            out.write(k.compute_md5(open(os.path.join(path,file)))[0] + " " + str(file) + "\n")
-#
-#    k.key = "Releases" + "/" + s + "/" + FILE_README
-#    k.set_contents_from_filename(os.path.join(DEST,FILE_README))
-#
 def runPostamble(factory):
     factory.addStep(ShellCommand(description=["Setting destination"],
                     command=["sh", "-c", WithProperties('echo "%s" > ./deploy-dir', "DEST")],
@@ -621,20 +509,6 @@ def runPostamble(factory):
                         command=["mkdir", "-p", "yocto"],
                         env=copy.copy(defaultenv),
                         timeout=14400))
-    #if defaultenv['ABTARGET'] != "oecore":
-    #    factory.addStep(ShellCommand(doStepIf=getRepo, warnOnFailure=True, description="Grabbing git archive",
-    #                    command=["sh", "-c", WithProperties("wget %s/snapshot/%s-%s.tar.bz2", "cgitrepo", "short-repo-name", "got_revision")],
-    #                    timeout=600))
-    #    factory.addStep(ShellCommand(doStepIf=getRepo, warnOnFailure=True, description="Moving tarball",  
-    #                    command=["sh", "-c", WithProperties("mv %s-%s.tar.bz2 %s", "short-repo-name", "got_revision", "DEST")],
-    #                    timeout=600))
-    #elif defaultenv['ABTARGET'] == "oecore":
-    #    factory.addStep(ShellCommand(doStepIf=setOECoreRepo, warnOnFailure=True, description="Grabbing git archive",
-    #                    command=["sh", "-c", WithProperties("wget %s/snapshot/%s-%s.tar.bz2", "cgitrepo", "short-repo-name", "got_revision")],
-    #                    timeout=600))
-    #    factory.addStep(ShellCommand(doStepIf=setOECoreRepo, warnOnFailure=True, description="Moving tarball",
-    #                    command=["sh", "-c", WithProperties("mv %s-%s.tar.bz2 %s", "short-repo-name", "got_revision", "DEST")],
-    #                    timeout=600))
 
 def buildBSPLayer(factory, distrotype, btarget, provider):
     if distrotype == "poky":
@@ -923,14 +797,13 @@ defaultenv['ENABLE_SWABBER'] = 'false'
 defaultenv['MIGPL']="False"
 defaultenv['REVISION'] = "denzil"
 f97.addStep(shell.SetProperty(command="echo 'master'", property="branch"))
-#makeCheckout(f97)
 makeScriptsCheckout(f97)
 makeRepoCheckout(f97)
 runPreamble(f97, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
 runImage(f97, 'overo', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
-publishArtifacts(f97, "toolchain","build/build/tmp")
-publishArtifacts(f97, "ipk", "build/build/tmp")
+#publishArtifacts(f97, "toolchain","build/build/tmp")
+#publishArtifacts(f97, "ipk", "build/build/tmp")
 f97.addStep(NoOp(name="nightly"))
 b97 = {'name': "overo-master",
       'slavenames': ["builder1"],
