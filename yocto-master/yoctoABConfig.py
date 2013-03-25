@@ -359,7 +359,7 @@ def runImage(factory, machine, distro, bsplayer, provider, buildhistory):
                     env=copy.copy(defaultenv),
                     timeout=24400)
     factory.addStep(ShellCommand(warnOnFailure=True, description="uploading to S3", 
-				 command=["UploadToS3WithMD5", "build/tmp/deploy/images/",  WithProperties("%s", "branch"), defaultenv['MACHINE']], workdir="/media",
+				 command=["UploadToS3WithMD5", "/media/build/tmp/deploy/images/",  WithProperties("%s", "branch"), defaultenv['MACHINE']], workdir="/media",
 				 timeout=600))
     factory.addStep(ShellCommand(description="Shutting Down", 
 				 command=["sudo", "halt"],
