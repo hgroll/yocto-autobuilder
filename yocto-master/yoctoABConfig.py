@@ -832,6 +832,7 @@ defaultenv['ENABLE_SWABBER'] = 'false'
 defaultenv['MIGPL']="False"
 defaultenv['REVISION'] = "danny"
 f98.addStep(shell.SetProperty(command="echo 'dev'", property="branch"))
+makeScriptsCheckout(f98)
 makeCheckout(f98)
 runPreamble(f98, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
@@ -866,6 +867,7 @@ defaultenv['ENABLE_SWABBER'] = 'false'
 defaultenv['MIGPL']="False"
 defaultenv['REVISION'] = "danny"
 f98.addStep(shell.SetProperty(command="echo 'master'", property="branch"))
+makeScriptsCheckout(f99)
 makeCheckout(f99)
 runPreamble(f99, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
@@ -900,6 +902,7 @@ defaultenv['ENABLE_SWABBER'] = 'false'
 defaultenv['MIGPL']="False"
 defaultenv['REVISION'] = "danny"
 f100.addStep(shell.SetProperty(command="echo 'dev'", property="branch"))
+makeScriptsCheckout(f100)
 makeCheckout(f100)
 runPreamble(f100, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
