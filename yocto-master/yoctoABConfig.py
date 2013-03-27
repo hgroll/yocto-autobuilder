@@ -802,8 +802,6 @@ makeRepoCheckout(f97)
 runPreamble(f97, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
 runImage(f97, 'overo', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
-#publishArtifacts(f97, "toolchain","build/build/tmp")
-#publishArtifacts(f97, "ipk", "build/build/tmp")
 f97.addStep(NoOp(name="nightly"))
 b97 = {'name': "overo-master",
       'slavenames': ["builder1"],
@@ -837,8 +835,6 @@ makeCheckout(f98)
 runPreamble(f98, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
 runImage(f98, 'overo', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
-publishArtifacts(f98, "toolchain","build/build/tmp")
-publishArtifacts(f98, "ipk", "build/build/tmp")
 f98.addStep(NoOp(name="nightly"))
 b98 = {'name': "overo-dev",
       'slavenames': ["builder2"],
@@ -872,8 +868,6 @@ makeCheckout(f99)
 runPreamble(f99, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
 runImage(f99, 'duovero', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
-publishArtifacts(f99, "toolchain","build/build/tmp")
-publishArtifacts(f99, "ipk", "build/build/tmp")
 f99.addStep(NoOp(name="nightly"))
 b99 = {'name': "duovero-master",
       'slavenames': ["builder3"],
@@ -907,8 +901,6 @@ makeCheckout(f100)
 runPreamble(f100, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
 runImage(f100, 'pepper', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
-publishArtifacts(f100, "toolchain","build/build/tmp")
-publishArtifacts(f100, "ipk", "build/build/tmp")
 f100.addStep(NoOp(name="nightly"))
 b100 = {'name': "pepper-master",
       'slavenames': ["builder4"],
