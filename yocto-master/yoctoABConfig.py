@@ -317,18 +317,8 @@ def checkBranchDev(step):
         return False
 
 def runImage(factory, machine, distro, bsplayer, provider, buildhistory):
-#    factory.addStep(ShellCommand, description=["cleaning deploy directory"],
-#		    command=["sh", "-c", WithProperties("rm -rf tmp/deploy/images/")],
-#		    workdir="build/build",
-#		    timeout=100)
     factory.addStep(RemoveDirectory(warnOnFailure=True, dir="build/build/tmp/deploy/images"))
-#    factory.addStep(shutil.rmtree('tmp/deploy/images'), description=["cleaning deploy directory"], workdir="build/build", 
-#                    timeout=100)
     factory.addStep(RemoveDirectory(warnOnFailure=True, dir="build/build/conf"))
-#    factory.addStep(ShellCommand, description=["cleaning configuration directory"],
-#		    command=["sh", "-c", WithProperties("rm -rf conf")],
-#		    workdir="build/build",
-#		    timeout=10)
     factory.addStep(ShellCommand(haltOnFailure=True, doStepIf=checkBranchMaster,  description=["setting up build"],
                     command=["yocto-autobuild-preamble"],
                     workdir="build",
@@ -348,7 +338,6 @@ def runImage(factory, machine, distro, bsplayer, provider, buildhistory):
                     env=copy.copy(defaultenv),
                     command='echo "Getting the slave basedir"'))
     slavehome = defaultenv['ABTARGET']
-    #BBLAYER = defaultenv['SLAVEBASEDIR'] + "/" + slavehome + "/build/build/conf/bblayers.conf"
     defaultenv['MACHINE'] = machine
     factory.addStep(ShellCommand, haltOnFailure=True, description=["Building", machine, "gumstix-console-image"],
                     command=["yocto-autobuild", "gumstix-console-image", "-k", "-D"],
@@ -801,8 +790,9 @@ makeScriptsCheckout(f97)
 makeRepoCheckout(f97)
 runPreamble(f97, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
-runImage(f97, 'overo', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
+#runImage(f97, 'overo', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
 f97.addStep(NoOp(name="nightly"))
+f97.addStep(ShellCommand(description=["Syncing Source Repository"], command=["SyncSourceToS3", "/media/build/downloads/", "s3://downloads.gumstix.org"]))
 b97 = {'name': "overo-master",
       'slavenames': ["builder1"],
       'builddir': "nightly-gumstix-master",
@@ -831,7 +821,7 @@ defaultenv['MIGPL']="False"
 defaultenv['REVISION'] = "danny"
 f98.addStep(shell.SetProperty(command="echo 'dev'", property="branch"))
 makeScriptsCheckout(f98)
-makeCheckout(f98)
+makeRepoCheckout(f98)
 runPreamble(f98, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
 runImage(f98, 'overo', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
@@ -864,7 +854,7 @@ defaultenv['MIGPL']="False"
 defaultenv['REVISION'] = "danny"
 f98.addStep(shell.SetProperty(command="echo 'master'", property="branch"))
 makeScriptsCheckout(f99)
-makeCheckout(f99)
+makeRepoCheckout(f99)
 runPreamble(f99, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
 runImage(f99, 'duovero', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
@@ -897,7 +887,7 @@ defaultenv['MIGPL']="False"
 defaultenv['REVISION'] = "danny"
 f100.addStep(shell.SetProperty(command="echo 'dev'", property="branch"))
 makeScriptsCheckout(f100)
-makeCheckout(f100)
+makeRepoCheckout(f100)
 runPreamble(f100, defaultenv['ABTARGET'])
 defaultenv['SDKMACHINE'] = 'i686'
 runImage(f100, 'pepper', defaultenv['DISTRO'], False, "gumstix", defaultenv['BUILD_HISTORY_COLLECT'])
